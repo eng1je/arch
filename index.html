@@ -50,17 +50,32 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <!-- Animated decorative shapes -->
+        <!-- Animated mathematical symbols -->
         <div class="hero-shapes" aria-hidden="true">
-            <span class="shape shape-orb shape-orb--gold"></span>
-            <span class="shape shape-orb shape-orb--blue"></span>
-            <span class="shape shape-ring shape-ring--1"></span>
-            <span class="shape shape-ring shape-ring--2"></span>
-            <span class="shape shape-ring shape-ring--3"></span>
-            <span class="shape shape-diamond"></span>
-            <span class="shape shape-dot shape-dot--1"></span>
-            <span class="shape shape-dot shape-dot--2"></span>
-            <span class="shape shape-dot shape-dot--3"></span>
+            <span class="shape-orb shape-orb--gold"></span>
+            <span class="shape-orb shape-orb--blue"></span>
+
+            <!-- left band -->
+            <span class="math-symbol" style="--x:4%; --y:15%; --s:3.4rem; --o:.32; --t:12s; --d:0s">&#960;</span>
+            <span class="math-symbol" style="--x:9%; --y:52%; --s:2.8rem; --o:.26; --t:15s; --d:1.2s">&#8721;</span>
+            <span class="math-symbol" style="--x:3%; --y:77%; --s:2.2rem; --o:.24; --t:13s; --d:2.1s">&#8706;</span>
+            <span class="math-symbol ms-blue" style="--x:16%; --y:33%; --s:3.2rem; --o:.2; --t:17s; --d:.6s">&#8747;</span>
+            <span class="math-symbol ms-blue" style="--x:14%; --y:88%; --s:1.9rem; --o:.24; --t:14s; --d:3s">&#955;</span>
+
+            <!-- right band -->
+            <span class="math-symbol ms-right" style="--x:5%; --y:13%; --s:3.2rem; --o:.3; --t:13.5s; --d:.9s">&#937;</span>
+            <span class="math-symbol ms-right ms-blue" style="--x:9%; --y:46%; --s:3.2rem; --o:.22; --t:16s; --d:2.4s">&#8730;</span>
+            <span class="math-symbol ms-right" style="--x:17%; --y:69%; --s:2rem; --o:.24; --t:12.5s; --d:1.8s">&#952;</span>
+            <span class="math-symbol ms-right" style="--x:4%; --y:82%; --s:2.4rem; --o:.26; --t:15.5s; --d:3.4s">&#8734;</span>
+            <span class="math-symbol ms-right ms-blue" style="--x:15%; --y:27%; --s:2.1rem; --o:.2; --t:18s; --d:.3s">&#916;</span>
+
+            <!-- near the middle, only in the top/bottom padding areas -->
+            <span class="math-symbol" style="--x:27%; --y:89%; --s:1.7rem; --o:.2; --t:11.5s; --d:2.7s">&#8776;</span>
+            <span class="math-symbol ms-right" style="--x:27%; --y:3%; --s:1.8rem; --o:.2; --t:14.5s; --d:1.5s">&#966;</span>
+
+            <!-- faint formulas -->
+            <span class="math-formula math-formula--top">E = mc&#178;</span>
+            <span class="math-formula math-formula--bottom">&#8721; 1/n&#178; = &#960;&#178;/6</span>
         </div>
         <div class="hero-content">
             <img src="images/logo.png" alt="شعار كلية الهندسة – جامعة الجفرة" class="hero-logo">
@@ -78,7 +93,7 @@
         <div class="container">
             <!-- Departments Section -->
             <section id="departmentsSection">
-                <h2 class="section-title">
+                <h2 class="section-title" data-symbol="&#8721;">
                     <i class="fas fa-building-columns"></i> الأقسام الدراسية
                 </h2>
                 <div class="loading" id="departmentsLoading">
@@ -97,7 +112,7 @@
                 <button class="btn-back" id="backToDepartments">
                     <i class="fas fa-arrow-right"></i> رجوع إلى الأقسام
                 </button>
-                <h2 class="section-title">
+                <h2 class="section-title" data-symbol="&#8730;">
                     <i class="fas fa-book"></i> المواد الدراسية
                     <span class="section-subtitle" id="departmentNameSubtitle"></span>
                 </h2>
@@ -117,7 +132,7 @@
                 <button class="btn-back" id="backToSubjects">
                     <i class="fas fa-arrow-right"></i> رجوع إلى المواد
                 </button>
-                <h2 class="section-title">
+                <h2 class="section-title" data-symbol="&#8747;">
                     <i class="fas fa-file-pdf"></i> امتحانات السنوات السابقة
                     <span class="section-subtitle" id="subjectNameSubtitle"></span>
                 </h2>
@@ -137,7 +152,7 @@
     <!-- Contact Section -->
     <section class="contact-section">
         <div class="container">
-            <h2 class="section-title">
+            <h2 class="section-title" data-symbol="&#960;">
                 <i class="fas fa-address-card"></i> للتواصل وإضافة أسئلة الامتحانات
             </h2>
             <div class="contact-cards">
