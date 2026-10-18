@@ -49,6 +49,10 @@ pids/
 .tmp/
 temp/
 
+# ملفات الامتحانات (PDF) في جذر المشروع
+# لا تُرفع إلى المستودع — مكانها الصحيح هو Supabase Storage (سلة exam-files)
+/*.pdf
+
 # Test coverage
 coverage/
 
