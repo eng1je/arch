@@ -60,6 +60,9 @@
 │  ├─ config.js               # إعداد Supabase + الدوال المساعدة
 │  ├─ app.js                  # منطق واجهة الطلبة
 │  └─ admin.js                # منطق لوحة الإدارة
+├─ images/
+│  ├─ logo.png                # شعار الكلية (خلفية شفافة)
+│  └─ logo-128.png            # أيقونة الموقع (favicon)
 ├─ supabase/
 │  └─ schema.sql              # ⭐ ملف إعداد قاعدة البيانات والتخزين
 ├─ .github/workflows/deploy.yml  # نشر تلقائي على GitHub Pages
