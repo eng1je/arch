@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أرشيف امتحانات كلية الهندسة – جامعة الجفرة</title>
+    <meta name="description" content="أرشيف امتحانات السنوات السابقة لكلية الهندسة - جامعة الجفرة. استعرض، معاينة، وتحميل امتحانات PDF بسهولة">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h1>أرشيف امتحانات كلية الهندسة – جامعة الجفرة</h1>
+                </div>
+                <div class="nav-actions">
+                    <button class="btn-search-toggle" id="searchToggleBtn" aria-label="بحث سريع" title="بحث سريع">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="btn-admin" onclick="window.location.href='admin.html'" title="لوحة الإدارة">
+                        <i class="fas fa-user-shield"></i> لوحة الإدارة
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Search Bar -->
+        <div class="search-bar-container" id="searchBarContainer" style="display: none;">
+            <div class="search-wrapper">
+                <div class="search-bar">
+                    <input type="text" id="globalSearch" placeholder="ابحث عن قسم أو مادة أو امتحان..." autocomplete="off" aria-label="بحث">
+                    <button id="searchBtn" aria-label="بحث">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="search-results" id="searchResults"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2>أرشيف امتحانات كلية الهندسة</h2>
+            <p>جامعة الجفرة</p>
+            <p class="hero-subtitle">استعرض وتحميل امتحانات السنوات السابقة بكل سهولة</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Departments Section -->
+            <section id="departmentsSection">
+                <h2 class="section-title">
+                    <i class="fas fa-building-columns"></i> الأقسام الدراسية
+                </h2>
+                <div class="loading" id="departmentsLoading">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل الأقسام...</p>
+                </div>
+                <div class="cards-grid" id="departmentsGrid" style="display: none;"></div>
+                <div class="empty-state" id="departmentsEmpty" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <p>لا توجد أقسام دراسية متاحة حالياً</p>
+                </div>
+            </section>
+
+            <!-- Subjects Section -->
+            <section id="subjectsSection" style="display: none;">
+                <button class="btn-back" id="backToDepartments">
+                    <i class="fas fa-arrow-right"></i> رجوع إلى الأقسام
+                </button>
+                <h2 class="section-title">
+                    <i class="fas fa-book"></i> المواد الدراسية
+                    <span class="section-subtitle" id="departmentNameSubtitle"></span>
+                </h2>
+                <div class="loading" id="subjectsLoading">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل المواد...</p>
+                </div>
+                <div class="cards-grid" id="subjectsGrid" style="display: none;"></div>
+                <div class="empty-state" id="subjectsEmpty" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <p>لا توجد مواد دراسية في هذا القسم</p>
+                </div>
+            </section>
+
+            <!-- Exams Section -->
+            <section id="examsSection" style="display: none;">
+                <button class="btn-back" id="backToSubjects">
+                    <i class="fas fa-arrow-right"></i> رجوع إلى المواد
+                </button>
+                <h2 class="section-title">
+                    <i class="fas fa-file-pdf"></i> امتحانات السنوات السابقة
+                    <span class="section-subtitle" id="subjectNameSubtitle"></span>
+                </h2>
+                <div class="loading" id="examsLoading">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل الامتحانات...</p>
+                </div>
+                <div class="exams-list" id="examsList" style="display: none;"></div>
+                <div class="empty-state" id="examsEmpty" style="display: none;">
+                    <i class="fas fa-file-circle-xmark"></i>
+                    <p>لا توجد امتحانات سابقة لهذه المادة</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-address-card"></i> للتواصل وإضافة أسئلة الامتحانات
+            </h2>
+            <div class="contact-cards">
+                <a href="https://wa.me/218943769102" target="_blank" rel="noopener noreferrer" class="contact-card whatsapp" aria-label="تواصل عبر واتساب">
+                    <i class="fab fa-whatsapp"></i>
+                    <div class="contact-info">
+                        <h3>واتساب</h3>
+                        <p>+218943769102</p>
+                    </div>
+                </a>
+                <a href="https://www.facebook.com/share/1DotxjdLmk/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" class="contact-card facebook" aria-label="صفحة فيسبوك">
+                    <i class="fab fa-facebook"></i>
+                    <div class="contact-info">
+                        <h3>فيسبوك</h3>
+                        <p>الصفحة الرسمية</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="credit">إعداد جهاد سالم أحمد</p>
+            <p class="copyright">&copy; <span id="year"></span> أرشيف امتحانات كلية الهندسة – جامعة الجفرة. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+
+    <!-- PDF Modal -->
+    <div id="pdfModal" class="modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="pdfModalTitle">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="pdfModalTitle">معاينة الملف</h3>
+                <button class="modal-close" id="pdfModalClose" aria-label="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfViewer" src="" title="معاينة ملف PDF" loading="lazy"></iframe>
+            </div>
+            <div class="modal-footer">
+                <a id="pdfDownloadBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                    <i class="fas fa-download"></i> تحميل الملف
+                </a>
+                <button type="button" class="btn btn-secondary" id="pdfModalCloseBtn">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

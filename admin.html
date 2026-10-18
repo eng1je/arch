@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة إدارة الأرشيف - كلية الهندسة جامعة الجفرة</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Login Section -->
+    <section id="loginSection" class="login-section">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <i class="fas fa-user-shield login-icon"></i>
+                    <h2>تسجيل الدخول للوحة الإدارة</h2>
+                    <p>أرشيف امتحانات كلية الهندسة – جامعة الجفرة</p>
+                </div>
+                <form id="loginForm" class="login-form" novalidate autocomplete="on">
+                    <div class="form-group">
+                        <label for="email">البريد الإلكتروني</label>
+                        <input type="email" id="email" name="email" required autocomplete="email" placeholder="example@example.com" inputmode="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">كلمة المرور</label>
+                        <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="********">
+                    </div>
+                    <button type="submit" class="btn-login" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                    </button>
+                </form>
+                <div class="login-footer">
+                    <a href="index.html" class="back-to-site">
+                        <i class="fas fa-home"></i> العودة للموقع الرئيسي
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Dashboard -->
+    <section id="adminSection" class="admin-section" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>لوحة الإدارة</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="dashboard" aria-current="page">
+                    <i class="fas fa-chart-pie"></i> الإحصائيات
+                </button>
+                <button class="nav-item" data-tab="departments">
+                    <i class="fas fa-building-columns"></i> الأقسام الدراسية
+                </button>
+                <button class="nav-item" data-tab="subjects">
+                    <i class="fas fa-book"></i> المواد الدراسية
+                </button>
+                <button class="nav-item" data-tab="exams">
+                    <i class="fas fa-file-pdf"></i> الامتحانات
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" id="logoutBtn" type="button">
+                    <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="admin-header">
+                <div class="header-top">
+                    <h1 id="pageTitle">لوحة التحكم - الإحصائيات</h1>
+                    <div class="admin-user">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="userEmail">-</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboardTab" class="tab-content active">
+                <h2 class="tab-title">نظرة عامة</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon dept-icon">
+                            <i class="fas fa-building-columns"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="statDepartments">0</h3>
+                            <p>عدد الأقسام</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon subj-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="statSubjects">0</h3>
+                            <p>عدد المواد</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon exam-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="statExams">0</h3>
+                            <p>عدد الامتحانات</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon file-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="statFiles">0</h3>
+                            <p>ملفات مرفوعة</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="welcome-card">
+                    <i class="fas fa-info-circle"></i>
+                    <h3>أهلاً بك في لوحة الإدارة</h3>
+                    <p>يمكنك إدارة الأقسام والمواد وامتحانات السنوات السابقة من خلال القوائم الجانبية</p>
+                </div>
+            </div>
+
+            <!-- Departments Tab -->
+            <div id="departmentsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2 class="tab-title">إدارة الأقسام الدراسية</h2>
+                    <button type="button" class="btn btn-primary" id="addDeptBtn">
+                        <i class="fas fa-plus"></i> إضافة قسم جديد
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">اسم القسم</th>
+                                <th scope="col">عدد المواد</th>
+                                <th scope="col">تاريخ الإضافة</th>
+                                <th scope="col">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="departmentsTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="deptTableEmpty" style="display: none;">
+                    <i class="fas fa-folder-open"></i>
+                    <p>لا توجد أقسام مضافة حتى الآن</p>
+                </div>
+            </div>
+
+            <!-- Subjects Tab -->
+            <div id="subjectsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2 class="tab-title">إدارة المواد الدراسية</h2>
+                    <button type="button" class="btn btn-primary" id="addSubjBtn">
+                        <i class="fas fa-plus"></i> إضافة مادة جديدة
+                    </button>
+                </div>
+                <div class="filters">
+                    <select id="deptFilter" class="filter-select" aria-label="فلتر حسب القسم">
+                        <option value="all">جميع الأقسام</option>
+                    </select>
+                    <input type="text" id="subjSearch" class="filter-input" placeholder="ابحث عن اسم المادة..." aria-label="بحث في المواد">
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">اسم المادة</th>
+                                <th scope="col">القسم التابع له</th>
+                                <th scope="col">عدد الامتحانات</th>
+                                <th scope="col">تاريخ الإضافة</th>
+                                <th scope="col">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjectsTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="subjTableEmpty" style="display: none;">
+                    <i class="fas fa-book-open"></i>
+                    <p>لا توجد مواد مضافة حتى الآن</p>
+                </div>
+            </div>
+
+            <!-- Exams Tab -->
+            <div id="examsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2 class="tab-title">إدارة الامتحانات</h2>
+                    <button type="button" class="btn btn-primary" id="addExamBtn">
+                        <i class="fas fa-plus"></i> إضافة امتحان جديد
+                    </button>
+                </div>
+                <div class="filters">
+                    <select id="examDeptFilter" class="filter-select" aria-label="فلتر حسب القسم">
+                        <option value="all">جميع الأقسام</option>
+                    </select>
+                    <select id="examSubjFilter" class="filter-select" aria-label="فلتر حسب المادة">
+                        <option value="all">جميع المواد</option>
+                    </select>
+                    <input type="text" id="examSearch" class="filter-input" placeholder="ابحث عن اسم الامتحان أو السنة أو الفصل..." aria-label="بحث في الامتحانات">
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">اسم الامتحان</th>
+                                <th scope="col">المادة</th>
+                                <th scope="col">القسم</th>
+                                <th scope="col">السنة</th>
+                                <th scope="col">الفصل الدراسي</th>
+                                <th scope="col">تاريخ الإضافة</th>
+                                <th scope="col">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="examsTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="examTableEmpty" style="display: none;">
+                    <i class="fas fa-file-circle-xmark"></i>
+                    <p>لا توجد امتحانات مضافة حتى الآن</p>
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <!-- Department Modal -->
+    <div id="deptModal" class="modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="deptModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="deptModalTitle">إضافة قسم جديد</h3>
+                <button class="modal-close" id="deptModalClose" type="button" aria-label="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="deptForm" novalidate autocomplete="off">
+                <input type="hidden" id="deptId">
+                <div class="form-group">
+                    <label for="deptName">اسم القسم <span class="required">*</span></label>
+                    <input type="text" id="deptName" name="deptName" required placeholder="أدخل اسم القسم الدراسي" maxlength="255">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="deptSaveBtn">
+                        <i class="fas fa-save"></i> حفظ
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="deptCancelBtn">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Subject Modal -->
+    <div id="subjModal" class="modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="subjModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="subjModalTitle">إضافة مادة جديدة</h3>
+                <button class="modal-close" id="subjModalClose" type="button" aria-label="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="subjForm" novalidate autocomplete="off">
+                <input type="hidden" id="subjId">
+                <div class="form-group">
+                    <label for="subjDept">القسم التابع له <span class="required">*</span></label>
+                    <select id="subjDept" name="subjDept" required>
+                        <option value="">اختر القسم</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="subjName">اسم المادة <span class="required">*</span></label>
+                    <input type="text" id="subjName" name="subjName" required placeholder="أدخل اسم المادة الدراسية" maxlength="255">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="subjSaveBtn">
+                        <i class="fas fa-save"></i> حفظ
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="subjCancelBtn">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Exam Modal -->
+    <div id="examModal" class="modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="examModalTitle">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="examModalTitle">إضافة امتحان جديد</h3>
+                <button class="modal-close" id="examModalClose" type="button" aria-label="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="examForm" novalidate autocomplete="off" enctype="multipart/form-data">
+                <input type="hidden" id="examId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="examDept">القسم <span class="required">*</span></label>
+                        <select id="examDept" name="examDept" required>
+                            <option value="">اختر القسم</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="examSubj">المادة <span class="required">*</span></label>
+                        <select id="examSubj" name="examSubj" required>
+                            <option value="">اختر المادة</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="examName">اسم الامتحان <span class="required">*</span></label>
+                        <input type="text" id="examName" name="examName" required placeholder="مثال: امتحان نهائي 2019" maxlength="255">
+                    </div>
+                    <div class="form-group">
+                        <label for="examYear">السنة <span class="required">*</span></label>
+                        <input type="number" id="examYear" name="examYear" required placeholder="مثال: 2019" min="1990" max="2030" inputmode="numeric">
+                    </div>
+                    <div class="form-group">
+                        <label for="examSemester">الفصل الدراسي <span class="required">*</span></label>
+                        <select id="examSemester" name="examSemester" required>
+                            <option value="">اختر الفصل</option>
+                            <option value="الاول">الفصل الأول</option>
+                            <option value="الثاني">الفصل الثاني</option>
+                            <option value="الصيفي">الفصل الصيفي</option>
+                            <option value="كليهما">كليهما</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="examDesc">وصف اختياري</label>
+                    <input type="text" id="examDesc" name="examDesc" placeholder="وصف إضافي للامتحان (اختياري)" maxlength="500">
+                </div>
+                <div class="form-group">
+                    <label for="examFile">ملف PDF <span class="required" id="fileRequired">*</span></label>
+                    <input type="file" id="examFile" name="examFile" accept="application/pdf">
+                    <small class="form-help">يجب أن يكون الملف بصيغة PDF، وحجمه لا يزيد عن 10 ميجابايت</small>
+                    <div id="currentFile" class="current-file" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="examSaveBtn">
+                        <i class="fas fa-save"></i> حفظ
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="examCancelBtn">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PDF Preview Modal -->
+    <div id="pdfModal" class="modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="pdfModalTitle">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="pdfModalTitle">معاينة الملف</h3>
+                <button class="modal-close" id="pdfModalClose" type="button" aria-label="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfViewer" src="" title="معاينة ملف PDF" loading="lazy"></iframe>
+            </div>
+            <div class="modal-footer">
+                <a id="pdfDownloadBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                    <i class="fas fa-download"></i> تحميل الملف
+                </a>
+                <button type="button" class="btn btn-secondary" id="pdfModalCloseBtn">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="deleteTitle">تأكيد الحذف</h3>
+                <button class="modal-close" id="deleteModalClose" type="button" aria-label="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">هل أنت متأكد من حذف هذا العنصر؟ لا يمكن التراجع عن هذه العملية.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> نعم، احذف
+                </button>
+                <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
