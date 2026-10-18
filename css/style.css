@@ -1663,3 +1663,945 @@ body.no-scroll {
         display: none;
     }
 }
+
+/* ==========================================================================
+   ✦✦✦  الطبقة الاحترافية  ✦✦✦
+   Premium Design Layer
+   --------------------------------------------------------------------------
+   هوية بصرية فاخرة موحّدة (هندسة + رياضيات): شبكة مخططات هندسية، ذهب فخم،
+   ظلال طبقية، أزرار لامعة، وحركات ظهور ناعمة.
+   تُطبَّق هذه القواعد فوق التنسيقات الأساسية وتسبقها في الأولوية.
+   ========================================================================== */
+
+:root {
+    /* تدرّجات الأزرق الهندسي */
+    --navy-900: #08122a;
+    --navy-800: #0b1830;
+    --navy-700: #14274d;
+    --navy-600: #1e3c72;
+    --blue-500: #2a5298;
+    --blue-400: #3b82f6;
+
+    /* تدرّجات الذهب */
+    --gold-100: #fef3c7;
+    --gold-200: #fde68a;
+    --gold-400: #fbbf24;
+    --gold-500: #f59e0b;
+    --gold-600: #d97706;
+    --gold-700: #b45309;
+
+    /* أسطح وخطوط شعرية */
+    --surface: #ffffff;
+    --surface-2: #f7f9fd;
+    --hairline: rgba(15, 23, 42, 0.08);
+    --hairline-gold: rgba(245, 158, 11, 0.38);
+
+    /* ظلال طبقية (بدلاً من الظل المسطّح) */
+    --elev-1: 0 1px 2px rgba(11, 24, 48, 0.06), 0 1px 3px rgba(11, 24, 48, 0.05);
+    --elev-2: 0 4px 10px -2px rgba(11, 24, 48, 0.10), 0 2px 6px -3px rgba(11, 24, 48, 0.07);
+    --elev-3: 0 16px 34px -12px rgba(11, 24, 48, 0.22), 0 6px 16px -10px rgba(11, 24, 48, 0.14);
+    --elev-4: 0 32px 64px -20px rgba(11, 24, 48, 0.34), 0 12px 26px -14px rgba(11, 24, 48, 0.20);
+    --ring: 0 0 0 3px rgba(245, 158, 11, 0.38), 0 0 0 1px rgba(245, 158, 11, 0.55);
+
+    /* منحنيات الحركة */
+    --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --------------------------------------------------------------------------
+   1) أساسيات عامة
+   -------------------------------------------------------------------------- */
+html {
+    scroll-padding-top: 96px;
+}
+
+::selection {
+    background: rgba(245, 158, 11, 0.3);
+    color: var(--navy-800);
+}
+
+::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+}
+
+::-webkit-scrollbar-track {
+    background: #eaeff7;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--navy-600), var(--blue-500));
+    border: 3px solid #eaeff7;
+    border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--gold-500), var(--gold-700));
+}
+
+:focus-visible {
+    outline: none;
+    box-shadow: var(--ring);
+}
+
+body {
+    background-color: #eef2f8;
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='460' height='460' viewBox='0 0 460 460'%3E%3Cg fill='%231e3c72' fill-opacity='0.05' font-family='Georgia,serif' font-size='52' font-weight='700'%3E%3Ctext x='16' y='74'%3E%CF%80%3C/text%3E%3Ctext x='316' y='128'%3E%E2%88%91%3C/text%3E%3Ctext x='148' y='270'%3E%E2%88%9A%3C/text%3E%3Ctext x='352' y='336'%3E%E2%88%AB%3C/text%3E%3Ctext x='44' y='416'%3E%CE%94%3C/text%3E%3Ctext x='228' y='52'%3E%E2%88%9E%3C/text%3E%3C/g%3E%3C/svg%3E"),
+        linear-gradient(180deg, #f6f9fe 0%, #eaeff7 100%);
+    background-repeat: repeat, no-repeat;
+    background-size: 460px 460px, 100% 100%;
+}
+
+/* --------------------------------------------------------------------------
+   2) شريط تقدّم القراءة + زر العودة للأعلى (تُنشأ بالجافاسكربت)
+   -------------------------------------------------------------------------- */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 3px;
+    width: 0;
+    z-index: 999;
+    background: linear-gradient(90deg, var(--gold-600), var(--gold-200), var(--gold-500));
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.85);
+    transition: width 0.08s linear;
+    pointer-events: none;
+}
+
+.to-top {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 900;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    font-size: 1.05rem;
+    color: #fff;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy-600), var(--blue-500));
+    box-shadow: var(--elev-3), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    opacity: 0;
+    transform: translateY(18px) scale(0.85);
+    pointer-events: none;
+    transition: opacity 0.35s var(--ease), transform 0.35s var(--ease-spring),
+        background 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+
+.to-top.is-visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+.to-top:hover {
+    background: linear-gradient(135deg, var(--gold-500), var(--gold-700));
+    box-shadow: 0 16px 34px -12px rgba(245, 158, 11, 0.95);
+    transform: translateY(-4px) scale(1.06);
+}
+
+/* --------------------------------------------------------------------------
+   3) الترويسة (Header)
+   -------------------------------------------------------------------------- */
+.header {
+    background: linear-gradient(135deg, rgba(8, 18, 42, 0.97) 0%, rgba(30, 60, 114, 0.97) 58%, rgba(42, 82, 152, 0.97) 100%);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+    box-shadow: 0 14px 38px -18px rgba(8, 18, 42, 0.9);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent 3%, rgba(245, 158, 11, 0.8) 50%, transparent 97%);
+}
+
+.logo-img {
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 16px rgba(245, 158, 11, 0.22));
+}
+
+.nav-logo:hover .logo-img {
+    transform: scale(1.06) rotate(-2deg);
+}
+
+.nav-logo h1 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    text-shadow: 0 3px 14px rgba(0, 0, 0, 0.45);
+}
+
+.btn-search-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 14px;
+    padding: 0.6rem 0.95rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.btn-search-toggle:hover {
+    background: linear-gradient(135deg, var(--gold-500), var(--gold-600));
+    border-color: rgba(253, 230, 138, 0.65);
+    box-shadow: 0 12px 26px -12px rgba(245, 158, 11, 0.95);
+}
+
+/* قائمة نتائج البحث */
+.search-bar-container {
+    background: rgba(255, 255, 255, 0.98);
+    border-bottom: 1px solid var(--hairline);
+    box-shadow: 0 18px 40px -26px rgba(8, 18, 42, 0.7);
+}
+
+.search-results {
+    border: 1px solid var(--hairline);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 30px 64px -26px rgba(8, 18, 42, 0.55);
+}
+
+.search-result-item:hover {
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0));
+}
+
+/* --------------------------------------------------------------------------
+   4) الواجهة الترحيبية (Hero) — القطعة المميّزة
+   -------------------------------------------------------------------------- */
+.hero {
+    padding: 4.25rem 1.5rem 5.25rem;
+    isolation: isolate;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+    background:
+        radial-gradient(1100px 520px at 50% -18%, rgba(96, 165, 250, 0.3), transparent 62%),
+        radial-gradient(780px 420px at 90% 114%, rgba(245, 158, 11, 0.17), transparent 64%),
+        linear-gradient(160deg, #08122a 0%, #14274d 44%, #1e3c72 74%, #24519e 100%);
+}
+
+/* شبكة المخططات الهندسية (Blueprint grid) */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: none;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.062) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.062) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+    background-size: 128px 128px, 128px 128px, 26px 26px, 26px 26px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 74% at 50% 42%, #000 28%, transparent 82%);
+    mask-image: radial-gradient(ellipse 80% 74% at 50% 42%, #000 28%, transparent 82%);
+}
+
+/* هالة ملوّنة نابضة خلف المحتوى */
+.hero::after {
+    content: '';
+    position: absolute;
+    top: -35%;
+    right: -18%;
+    width: 95%;
+    height: 175%;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.24) 0%, transparent 58%);
+    animation: glowPulse 14s ease-in-out infinite;
+}
+
+.hero h2 {
+    font-size: clamp(1.9rem, 5.2vw, 3.15rem);
+    font-weight: 800;
+    line-height: 1.32;
+    letter-spacing: -0.022em;
+    text-shadow: none;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 44%, #bfd3ee 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
+}
+
+.hero-logo {
+    filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 26px rgba(245, 158, 11, 0.28));
+}
+
+/* مؤشّر النزول للأسفل */
+.hero-scroll {
+    position: absolute;
+    bottom: 1.35rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    width: 26px;
+    height: 42px;
+    padding-top: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.32);
+    border-radius: 14px;
+    transition: border-color 0.35s var(--ease), transform 0.35s var(--ease);
+}
+
+.hero-scroll:hover {
+    border-color: rgba(245, 158, 11, 0.85);
+    transform: translateX(-50%) translateY(3px);
+}
+
+.hero-scroll span {
+    width: 4px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--gold-400);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.9);
+    animation: scrollDot 1.9s var(--ease) infinite;
+}
+
+@keyframes scrollDot {
+    0% { opacity: 0; transform: translateY(-4px); }
+    35% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(13px); }
+}
+
+/* --------------------------------------------------------------------------
+   5) عناوين الأقسام
+   -------------------------------------------------------------------------- */
+.section-title {
+    font-size: clamp(1.35rem, 3vw, 1.85rem);
+    font-weight: 800;
+    letter-spacing: -0.012em;
+    color: var(--navy-700);
+    gap: 0.85rem;
+    padding-bottom: 0.9rem;
+    margin-bottom: 1.75rem;
+    border-bottom: 1px solid var(--hairline);
+}
+
+.section-title::after {
+    width: 104px;
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--gold-500), var(--gold-200), transparent);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.55);
+}
+
+.section-title > i {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    margin-inline-start: -2px;
+    font-size: 1.2rem;
+    color: #fff;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--navy-600), var(--blue-500));
+    box-shadow: 0 12px 24px -12px rgba(30, 60, 114, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transition: background 0.4s var(--ease), transform 0.4s var(--ease-spring), box-shadow 0.4s var(--ease);
+}
+
+.section-title:hover > i {
+    background: linear-gradient(135deg, var(--gold-500), var(--gold-700));
+    transform: rotate(-8deg) scale(1.05);
+    box-shadow: 0 14px 28px -12px rgba(245, 158, 11, 0.95);
+}
+
+.section-subtitle {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: var(--gold-700);
+    background: linear-gradient(135deg, rgba(254, 243, 199, 0.95), rgba(253, 230, 138, 0.75));
+    border: 1px solid var(--hairline-gold);
+    border-radius: 999px;
+}
+
+/* --------------------------------------------------------------------------
+   6) محتوى الصفحة والفواصل الهندسية
+   -------------------------------------------------------------------------- */
+.main {
+    padding: 3rem 0 1rem;
+    min-height: auto;
+}
+
+.main > .container > section + section {
+    margin-top: 3.25rem;
+    padding-top: 3.25rem;
+    border-top: 1px dashed rgba(15, 23, 42, 0.12);
+}
+
+/* --------------------------------------------------------------------------
+   7) بطاقات الأقسام والمواد
+   -------------------------------------------------------------------------- */
+.cards-grid {
+    gap: 1.6rem;
+    perspective: 1200px;
+}
+
+.card {
+    padding: 1.65rem 1.5rem 1.5rem;
+    border: 1px solid var(--hairline);
+    border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+    box-shadow: var(--elev-2);
+    overflow: hidden;
+    transition: transform 0.45s var(--ease-out), box-shadow 0.45s var(--ease-out),
+        border-color 0.35s var(--ease);
+}
+
+/* شريط ذهبي علوي متحرك */
+.card::before {
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--navy-600), var(--gold-400), var(--navy-600));
+    background-size: 200% 100%;
+    animation: railFlow 7s linear infinite;
+}
+
+/* قوس الزاوية الهندسي السفلي */
+.card::after {
+    content: '';
+    position: absolute;
+    right: 13px;
+    bottom: 13px;
+    width: 22px;
+    height: 22px;
+    border-right: 2px solid rgba(245, 158, 11, 0.5);
+    border-bottom: 2px solid rgba(245, 158, 11, 0.5);
+    border-bottom-right-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.45s var(--ease-out), transform 0.45s var(--ease-out);
+}
+
+@keyframes railFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    border-color: var(--hairline-gold);
+    box-shadow: var(--elev-4), 0 0 0 1px rgba(245, 158, 11, 0.16);
+}
+
+.card:hover::after {
+    opacity: 1;
+    transform: translate(4px, 4px);
+}
+
+.card-icon {
+    width: 62px;
+    height: 62px;
+    margin-bottom: 1.1rem;
+    font-size: 1.6rem;
+    color: #fff;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--navy-700), var(--blue-500));
+    box-shadow: 0 14px 28px -14px rgba(30, 60, 114, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transition: transform 0.5s var(--ease-spring), background 0.45s var(--ease), box-shadow 0.45s var(--ease);
+}
+
+.card:hover .card-icon {
+    background: linear-gradient(135deg, var(--gold-400), var(--gold-600));
+    transform: translateY(-4px) rotate(-7deg) scale(1.05);
+    box-shadow: 0 18px 34px -14px rgba(245, 158, 11, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.card-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--navy-700);
+    margin-bottom: 0.35rem;
+}
+
+.card-subtitle {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: color 0.35s var(--ease);
+}
+
+.card:hover .card-subtitle {
+    color: var(--gold-700);
+}
+
+/* رقم الكتالوج (يضيفه الجافاسكربت) */
+.card-num {
+    position: absolute;
+    top: 0.95rem;
+    left: 1.05rem;
+    font-family: 'Cambria Math', 'Times New Roman', Georgia, serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: rgba(30, 60, 114, 0.1);
+    pointer-events: none;
+    transition: color 0.45s var(--ease), transform 0.45s var(--ease-out);
+}
+
+.card:hover .card-num {
+    color: rgba(245, 158, 11, 0.55);
+    transform: translateY(-3px);
+}
+
+/* زر الرجوع */
+.btn-back {
+    border-radius: 14px;
+    box-shadow: var(--elev-2);
+    border: 1px solid var(--hairline);
+    transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease), background 0.35s var(--ease);
+}
+
+.btn-back:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--elev-3);
+}
+
+/* --------------------------------------------------------------------------
+   8) قائمة الامتحانات
+   -------------------------------------------------------------------------- */
+.exam-item {
+    position: relative;
+    padding: 1.15rem 1.35rem;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+    box-shadow: var(--elev-1);
+    transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out),
+        border-color 0.35s var(--ease);
+}
+
+/* شريحة ذهبية على الحافة */
+.exam-item::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 14px;
+    right: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+    background: linear-gradient(180deg, var(--gold-400), rgba(245, 158, 11, 0));
+    opacity: 0;
+    transition: opacity 0.35s var(--ease);
+}
+
+/* علامة PDF بجانب عنوان الامتحان */
+.exam-name {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--navy-700);
+    margin-bottom: 0.55rem;
+}
+
+.exam-name::before {
+    content: '\f1c1';
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 1rem;
+    color: #dc2626;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transition: transform 0.45s var(--ease-spring), background 0.45s var(--ease);
+}
+
+.exam-item:hover .exam-name::before {
+    transform: scale(1.08) rotate(-5deg);
+    background: linear-gradient(135deg, #fecaca, #fca5a5);
+}
+
+.exam-item:hover {
+    transform: translateY(-4px);
+    border-color: var(--hairline-gold);
+    box-shadow: var(--elev-3);
+}
+
+.exam-item:hover::before {
+    opacity: 1;
+}
+
+.exam-meta {
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--navy-700);
+}
+
+.exam-meta-item {
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(30, 60, 114, 0.07), rgba(42, 82, 152, 0.07));
+    border: 1px solid rgba(30, 60, 114, 0.1);
+    transition: background 0.35s var(--ease), border-color 0.35s var(--ease);
+}
+
+.exam-item:hover .exam-meta-item {
+    background: linear-gradient(135deg, rgba(254, 243, 199, 0.9), rgba(253, 230, 138, 0.6));
+    border-color: var(--hairline-gold);
+}
+
+.exam-meta-item i {
+    color: var(--gold-500);
+    font-size: 0.8rem;
+}
+
+.exam-description {
+    font-size: 0.8rem;
+    font-style: normal;
+    margin-top: 0.55rem;
+    padding-inline-start: 0.6rem;
+    border-inline-start: 2px solid rgba(245, 158, 11, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   9) الأزرار
+   -------------------------------------------------------------------------- */
+.btn {
+    position: relative;
+    overflow: hidden;
+    padding: 0.65rem 1.35rem;
+    border-radius: 13px;
+    font-weight: 700;
+    letter-spacing: 0.005em;
+    box-shadow: var(--elev-1);
+    transition: transform 0.28s var(--ease-out), box-shadow 0.28s var(--ease-out),
+        background 0.28s var(--ease), border-color 0.28s var(--ease);
+}
+
+/* وميض يمرّ على الزر عند المرور */
+.btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 38%;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    transform: translateX(-180%) skewX(-18deg);
+    transition: transform 0.75s var(--ease-out);
+}
+
+.btn:hover::after {
+    transform: translateX(330%) skewX(-18deg);
+}
+
+.btn > i,
+.btn > span {
+    position: relative;
+    z-index: 2;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--navy-600), var(--blue-500));
+    box-shadow: 0 10px 22px -12px rgba(30, 60, 114, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--navy-700), var(--navy-600));
+    box-shadow: 0 16px 30px -12px rgba(30, 60, 114, 0.95);
+}
+
+.btn-secondary {
+    background: #fff;
+    border: 1px solid var(--hairline);
+    color: var(--navy-700);
+}
+
+.btn-secondary:hover {
+    background: #fff;
+    border-color: var(--hairline-gold);
+    color: var(--gold-700);
+    box-shadow: var(--elev-2);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, var(--blue-400), #2563eb);
+    box-shadow: 0 10px 22px -12px rgba(59, 130, 246, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+/* --------------------------------------------------------------------------
+   10) بطاقات الجداول الدراسية
+   -------------------------------------------------------------------------- */
+.timetable-card {
+    border: 1px solid var(--hairline);
+    border-radius: 22px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+    box-shadow: var(--elev-2);
+    transition: transform 0.45s var(--ease-out), box-shadow 0.45s var(--ease-out),
+        border-color 0.35s var(--ease);
+}
+
+.timetable-card::before {
+    height: 3px;
+    background: linear-gradient(90deg, var(--navy-600), var(--gold-400), var(--navy-600));
+    background-size: 200% 100%;
+    animation: railFlow 7s linear infinite;
+}
+
+.timetable-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--hairline-gold);
+    box-shadow: var(--elev-4), 0 0 0 1px rgba(245, 158, 11, 0.16);
+}
+
+.timetable-thumb {
+    background:
+        linear-gradient(135deg, rgba(30, 60, 114, 0.07), rgba(30, 60, 114, 0.13)),
+        repeating-linear-gradient(45deg, rgba(148, 163, 184, 0.16) 0 10px, transparent 10px 20px),
+        #eef2f8;
+}
+
+.timetable-badge {
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.timetable-body h3 {
+    font-size: 1.12rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+/* --------------------------------------------------------------------------
+   11) قسم التواصل
+   -------------------------------------------------------------------------- */
+.contact-section {
+    background: linear-gradient(180deg, #ffffff 0%, #f4f7fc 100%);
+    border-top: 1px solid var(--hairline);
+    padding: 3.25rem 0 2.5rem;
+}
+
+.contact-card {
+    padding: 1.35rem;
+    border: 1px solid var(--hairline);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: var(--elev-2);
+    transition: transform 0.42s var(--ease-out), box-shadow 0.42s var(--ease-out),
+        border-color 0.35s var(--ease);
+}
+
+.contact-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--elev-4);
+}
+
+.contact-card.whatsapp:hover {
+    border-color: rgba(37, 211, 102, 0.5);
+}
+
+.contact-card.facebook:hover {
+    border-color: rgba(24, 119, 242, 0.5);
+}
+
+.contact-card i {
+    transition: transform 0.45s var(--ease-spring);
+}
+
+.contact-card:hover i {
+    transform: scale(1.12) rotate(-6deg);
+}
+
+/* --------------------------------------------------------------------------
+   12) التذييل
+   -------------------------------------------------------------------------- */
+.footer {
+    position: relative;
+    margin-top: 3.5rem;
+    padding: 3rem 1.5rem 2.25rem;
+    background:
+        radial-gradient(900px 320px at 50% 0%, rgba(42, 82, 152, 0.45), transparent 72%),
+        linear-gradient(160deg, #0b1830 0%, #060d1c 100%);
+    border-top: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.85), transparent);
+}
+
+.footer-logo {
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 20px rgba(245, 158, 11, 0.25));
+}
+
+.credit {
+    font-size: 1.2rem;
+    letter-spacing: -0.01em;
+    color: var(--gold-200);
+    text-shadow: 0 0 22px rgba(245, 158, 11, 0.55), 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* --------------------------------------------------------------------------
+   13) حالات التحميل والفراغ + النوافذ والتنبيهات
+   -------------------------------------------------------------------------- */
+.spinner {
+    width: 46px;
+    height: 46px;
+    border-width: 3px;
+    border-color: rgba(30, 60, 114, 0.14);
+    border-top-color: var(--gold-500);
+    box-shadow: 0 0 22px rgba(245, 158, 11, 0.28);
+}
+
+.empty-state {
+    padding: 3rem 1.5rem;
+    background: linear-gradient(180deg, #ffffff, #f8fafd);
+    border: 1px dashed rgba(30, 60, 114, 0.22);
+    border-radius: 20px;
+    box-shadow: var(--elev-1);
+}
+
+.empty-state i {
+    display: inline-grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 1rem;
+    font-size: 1.9rem;
+    color: var(--gold-500);
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(254, 243, 199, 0.9), rgba(253, 230, 138, 0.5));
+}
+
+.modal-content {
+    border-radius: 22px;
+    box-shadow: var(--elev-4), 0 50px 110px -40px rgba(8, 18, 42, 0.75);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--navy-700), var(--blue-500));
+    border-bottom: none;
+}
+
+.modal-header h3 {
+    color: #fff;
+}
+
+.modal-close {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.26);
+}
+
+.toast {
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 22px 44px -18px rgba(8, 18, 42, 0.85);
+    font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   14) حركات الظهور عند التمرير (يضيفها الجافاسكربت)
+   -------------------------------------------------------------------------- */
+.reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 0.75s var(--ease-out), transform 0.75s var(--ease-out);
+}
+
+.reveal.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* --------------------------------------------------------------------------
+   15) تعديلات الشاشات الصغيرة
+   -------------------------------------------------------------------------- */
+@media (max-width: 968px) {
+    .exam-item {
+        padding: 1rem 1.1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+    }
+
+    .section-title > i {
+        width: 40px;
+        height: 40px;
+        font-size: 1.05rem;
+        border-radius: 12px;
+    }
+
+    .hero {
+        padding: 3.25rem 1.25rem 4.25rem;
+    }
+
+    .hero-scroll {
+        bottom: 0.85rem;
+    }
+
+    .to-top {
+        bottom: 1rem;
+        left: 1rem;
+        width: 44px;
+        height: 44px;
+    }
+
+    .main > .container > section + section {
+        margin-top: 2.5rem;
+        padding-top: 2.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    .card::before,
+    .timetable-card::before {
+        animation: none;
+    }
+
+    .btn::after,
+    .hero-scroll span {
+        display: none;
+    }
+}
