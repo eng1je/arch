@@ -60,6 +60,9 @@ coverage/
 # Supabase local dev
 supabase/.temp/
 
+# Original (unprocessed) logo — the optimized images/logo.png is the one used by the site
+images/logo-original.png
+
 # Vercel/Netlify
 .vercel
 .netlify

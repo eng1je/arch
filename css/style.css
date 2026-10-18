@@ -95,6 +95,43 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* College logo image */
+.logo-img {
+    height: 58px;
+    width: auto;
+    display: block;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.nav-logo:hover .logo-img {
+    transform: scale(1.05) rotate(-2deg);
+}
+
+.hero-logo {
+    width: 170px;
+    height: auto;
+    margin: 0 auto 1.25rem;
+    display: block;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45));
+    animation: logoFloat 6s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.footer-logo {
+    width: 74px;
+    height: auto;
+    margin: 0 auto 0.75rem;
+    display: block;
+    opacity: 0.95;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+}
+
 .nav-logo h1 {
     font-size: 1.25rem;
     font-weight: 800;
@@ -109,6 +146,14 @@ body {
     
     .nav-logo i {
         font-size: 1.75rem;
+    }
+
+    .logo-img {
+        height: 44px;
+    }
+
+    .hero-logo {
+        width: 120px;
     }
 }
 

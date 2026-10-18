@@ -119,6 +119,24 @@ body {
     box-shadow: var(--shadow-md);
 }
 
+/* College logo on the login card */
+.login-logo {
+    width: 120px;
+    height: auto;
+    margin: 0 auto 0.75rem;
+    display: block;
+    filter: drop-shadow(0 6px 14px rgba(30, 60, 114, 0.25));
+}
+
+/* College logo in the sidebar */
+.sidebar-logo {
+    width: 42px;
+    height: auto;
+    display: block;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4));
+}
+
 .login-header h2 {
     font-size: 1.375rem;
     font-weight: 700;
