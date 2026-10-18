@@ -1873,7 +1873,7 @@ body {
    4) الواجهة الترحيبية (Hero) — القطعة المميّزة
    -------------------------------------------------------------------------- */
 .hero {
-    padding: 4.25rem 1.5rem 5.25rem;
+    padding: 4.25rem 1.5rem 4.5rem;
     isolation: isolate;
     border-bottom: 1px solid rgba(245, 158, 11, 0.3);
     background:
@@ -1991,43 +1991,6 @@ body {
 @keyframes emblemFloat {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
-}
-
-/* مؤشّر النزول للأسفل */
-.hero-scroll {
-    position: absolute;
-    bottom: 1.35rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 3;
-    display: flex;
-    justify-content: center;
-    width: 26px;
-    height: 42px;
-    padding-top: 8px;
-    border: 2px solid rgba(255, 255, 255, 0.32);
-    border-radius: 14px;
-    transition: border-color 0.35s var(--ease), transform 0.35s var(--ease);
-}
-
-.hero-scroll:hover {
-    border-color: rgba(245, 158, 11, 0.85);
-    transform: translateX(-50%) translateY(3px);
-}
-
-.hero-scroll span {
-    width: 4px;
-    height: 8px;
-    border-radius: 2px;
-    background: var(--gold-400);
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.9);
-    animation: scrollDot 1.9s var(--ease) infinite;
-}
-
-@keyframes scrollDot {
-    0% { opacity: 0; transform: translateY(-4px); }
-    35% { opacity: 1; }
-    100% { opacity: 0; transform: translateY(13px); }
 }
 
 /* --------------------------------------------------------------------------
@@ -2782,11 +2745,7 @@ body {
     }
 
     .hero {
-        padding: 3.25rem 1.25rem 4.25rem;
-    }
-
-    .hero-scroll {
-        bottom: 0.85rem;
+        padding: 3.25rem 1.25rem 3.5rem;
     }
 
     .to-top {
@@ -2820,8 +2779,7 @@ body {
     }
 
     .banner-inner::after,
-    .btn::after,
-    .hero-scroll span {
+    .btn::after {
         display: none;
     }
 }
@@ -2981,16 +2939,6 @@ body {
         left: 1.15rem;
         right: 1.15rem;
         max-height: 60vh;
-    }
-}
-
-/* مؤشّر النزول في الواجهة الترحيبية — مساحة لمس مناسبة */
-@media (max-width: 640px) {
-    .hero-scroll {
-        width: 30px;
-        height: 46px;
-        padding-top: 9px;
-        border-radius: 15px;
     }
 }
 
@@ -3322,7 +3270,7 @@ body {
     }
 
     .hero {
-        padding: 2.6rem 1rem 3.4rem;
+        padding: 2.6rem 1rem 2.9rem;
     }
 
     .hero-emblem {
