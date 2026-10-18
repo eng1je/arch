@@ -1984,3 +1984,66 @@ body {
         justify-content: center;
     }
 }
+
+/* ==========================================================================
+   ✦✦✦  طبقة الهواتف — لوحة الإدارة
+   تحسينات لمس وقراءة على الشاشات الصغيرة (تُضاف في النهاية لتتجاوز ما قبلها)
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* منع تكبير iOS التلقائي عند الكتابة داخل الحقول */
+    input,
+    select,
+    textarea,
+    .form-group input,
+    .form-group select,
+    .filter-select,
+    .filter-input {
+        font-size: 16px;
+    }
+
+    a,
+    button,
+    .nav-item,
+    .btn,
+    .icon-btn,
+    .back-to-site {
+        -webkit-tap-highlight-color: rgba(245, 158, 11, 0.22);
+    }
+
+    /* مساحات لمس مريحة */
+    .nav-item {
+        min-height: 48px;
+    }
+
+    .icon-btn,
+    .sidebar-toggle {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .back-to-site {
+        min-height: 44px;
+        padding: 0 0.3rem;
+    }
+
+    .nav-label {
+        font-size: 0.72rem;
+    }
+
+    /* ترويسة ومحتوى أنعم */
+    .admin-header {
+        padding: 0.9rem 1rem;
+    }
+
+    .tab-content {
+        padding: 1rem 0.9rem;
+    }
+
+    .login-card {
+        padding: 1.75rem 1.25rem;
+    }
+
+    .sidebar {
+        width: 285px;
+    }
+}
