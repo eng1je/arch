@@ -1646,3 +1646,315 @@ body {
         padding: 2rem 1.5rem;
     }
 }
+/* ==========================================================================
+   ✦ إضافات اللوحة: ترويسة بأزرار · قوائم مُعنونة · سجل النشاط · النسخ الاحتياطي
+   ========================================================================== */
+
+/* ------------------------------ عناوين أقسام القائمة الجانبية ------------------------------ */
+.nav-label {
+    display: block;
+    padding: 0 0.4rem;
+    margin: 1rem 0 0.15rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: rgba(253, 230, 138, 0.55);
+}
+
+.sidebar-nav .nav-label:first-child {
+    margin-top: 0.25rem;
+}
+
+/* ------------------------------ الترويسة: عنوان + أزرار ------------------------------ */
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--border-color);
+    border-radius: 13px;
+    background: var(--bg-secondary);
+    color: var(--primary-color);
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.3s var(--ease-out), background 0.3s var(--ease),
+                color 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+.icon-btn:hover {
+    background: linear-gradient(135deg, var(--navy-600), var(--blue-500));
+    border-color: transparent;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -12px rgba(30, 60, 114, 0.9);
+}
+
+.icon-btn:focus-visible {
+    outline: 2px solid var(--gold-500);
+    outline-offset: 2px;
+}
+
+/* زر القائمة الجانبية يظهر على الشاشات الصغيرة فقط */
+.sidebar-toggle {
+    display: none;
+}
+
+/* ------------------------------ أزرار رأس كل تبويب ------------------------------ */
+.tab-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.btn-ghost {
+    background: #fff;
+    color: var(--primary-color);
+    border: 1.5px solid var(--border-color);
+}
+
+.btn-ghost:hover:not(:disabled) {
+    background: var(--bg-secondary);
+    border-color: var(--blue-500);
+    color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-danger-ghost {
+    background: #fff;
+    color: var(--danger-color);
+    border: 1.5px solid rgba(239, 68, 68, 0.35);
+}
+
+.btn-danger-ghost:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: var(--danger-color);
+    transform: translateY(-2px);
+}
+
+.tab-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin: -0.5rem 0 0;
+    padding: 0.85rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    background: linear-gradient(135deg, rgba(30, 60, 114, 0.05), rgba(245, 158, 11, 0.07));
+    border: 1px dashed rgba(30, 60, 114, 0.2);
+    border-radius: 14px;
+}
+
+.tab-hint i {
+    margin-top: 0.25rem;
+    color: var(--accent-color);
+}
+
+/* ------------------------------ شارات سجل النشاط ------------------------------ */
+.act-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.76rem;
+    font-weight: 800;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.act-add {
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.act-edit {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.act-del {
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.act-in {
+    background: rgba(30, 60, 114, 0.1);
+    color: var(--navy-600);
+    border-color: rgba(30, 60, 114, 0.28);
+}
+
+.act-out {
+    background: rgba(100, 116, 139, 0.12);
+    color: #475569;
+    border-color: rgba(100, 116, 139, 0.3);
+}
+
+/* ------------------------------ تبويب النسخ الاحتياطي ------------------------------ */
+.backup-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.9rem;
+}
+
+.backup-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.95rem 1.1rem;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+}
+
+.backup-stat i {
+    font-size: 1.15rem;
+    color: var(--blue-500);
+}
+
+.backup-stat strong {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+.backup-stat span {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.backup-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+}
+
+.backup-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding: 1.35rem 1.25rem;
+    text-align: right;
+    font-family: 'Cairo', sans-serif;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease), border-color 0.35s var(--ease);
+}
+
+.backup-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold-400), var(--blue-500), var(--gold-400));
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.45s var(--ease-out);
+}
+
+.backup-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(30, 60, 114, 0.32);
+    box-shadow: 0 26px 52px -24px rgba(8, 18, 42, 0.55);
+}
+
+.backup-card:hover::before {
+    transform: scaleX(1);
+}
+
+.backup-card:focus-visible {
+    outline: 2px solid var(--gold-500);
+    outline-offset: 3px;
+}
+
+.backup-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 0.4rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--navy-600), var(--blue-500));
+    color: var(--gold-200);
+    font-size: 1.15rem;
+    box-shadow: 0 12px 24px -12px rgba(30, 60, 114, 0.9);
+}
+
+.backup-card h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+.backup-card p {
+    font-size: 0.82rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+}
+
+/* ------------------------------ الشاشات الصغيرة ------------------------------ */
+@media (max-width: 768px) {
+    .sidebar-toggle {
+        display: inline-flex;
+    }
+
+    .admin-header .header-top {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
+    }
+
+    .header-title {
+        width: 100%;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .tab-header {
+        align-items: flex-start;
+    }
+
+    .tab-actions {
+        width: 100%;
+    }
+
+    .tab-actions .btn {
+        flex: 1;
+        justify-content: center;
+    }
+}

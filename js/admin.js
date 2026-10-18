@@ -38,7 +38,22 @@ tabs.forEach(tab => {
             case 'exams':
                 pageTitle.textContent = 'إدارة الامتحانات';
                 break;
+            case 'activity':
+                pageTitle.textContent = 'سجل النشاط';
+                break;
+            case 'backup':
+                pageTitle.textContent = 'النسخ الاحتياطي والتصدير';
+                break;
         }
+
+        // Close the mobile sidebar after choosing a section
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) sidebar.classList.remove('open');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        if (sidebarToggle) sidebarToggle.setAttribute('aria-expanded', 'false');
+
+        if (tabName === 'activity') renderActivityTable();
+        if (tabName === 'backup') renderBackupSummary();
     });
 });
 
@@ -53,6 +68,8 @@ async function initializeAdmin() {
     }
     
     setupEventListenersAdmin();
+    loadActivityLog();
+    setupAdminExtras();
     db.auth.onAuthStateChange(function (event) {
         if (event === 'SIGNED_OUT') {
             currentUser = null;
@@ -263,6 +280,7 @@ async function handleLogin(e) {
         
         currentUser = data.user;
         showToast('تم تسجيل الدخول بنجاح', 'success');
+        logActivity('دخول', 'حساب', email);
         showAdminDashboard();
         await loadAllData();
         e.target.reset();
@@ -280,6 +298,7 @@ async function handleLogout() {
     try {
         const { error } = await db.auth.signOut();
         if (error) throw error;
+        logActivity('خروج', 'حساب', currentUser?.email || '');
         currentUser = null;
         showToast('تم تسجيل الخروج بنجاح', 'success');
         showLoginForm();
@@ -447,6 +466,7 @@ async function handleDeptSubmit(e) {
             if (error) throw error;
             showToast('تم إضافة القسم بنجاح', 'success');
         }
+        logActivity(deptId ? 'تعديل' : 'إضافة', 'قسم', deptName);
         closeDeptModal();
         await loadDepartmentsAdmin();
         await loadSubjectsAdmin();
@@ -483,6 +503,7 @@ function deleteDepartment(id, name) {
                 .eq('id', id);
             if (error) throw error;
             showToast('تم حذف القسم بنجاح', 'success');
+            logActivity('حذف', 'قسم', name);
             await loadAllData();
         } catch (error) {
             console.error('Delete dept error:', error);
@@ -687,6 +708,7 @@ async function handleSubjSubmit(e) {
             if (error) throw error;
             showToast('تم إضافة المادة بنجاح', 'success');
         }
+        logActivity(subjId ? 'تعديل' : 'إضافة', 'مادة', subjName);
         closeSubjModal();
         await loadSubjectsAdmin();
         await loadExamsAdmin();
@@ -723,6 +745,7 @@ function deleteSubject(id, name) {
                 .eq('id', id);
             if (error) throw error;
             showToast('تم حذف المادة بنجاح', 'success');
+            logActivity('حذف', 'مادة', name);
             await loadAllData();
         } catch (error) {
             console.error('Delete subj error:', error);
@@ -991,6 +1014,7 @@ async function handleExamSubmit(e) {
             if (error) throw error;
             showToast('تم إضافة الامتحان بنجاح', 'success');
         }
+        logActivity(examId ? 'تعديل' : 'إضافة', 'امتحان', examName);
         closeExamModal();
         await loadExamsAdmin();
         updateStats();
@@ -1029,6 +1053,7 @@ function deleteExam(id, name) {
                 .eq('id', id);
             if (error) throw error;
             showToast('تم حذف الامتحان بنجاح', 'success');
+            logActivity('حذف', 'امتحان', name);
             await loadExamsAdmin();
             updateStats();
         } catch (error) {
@@ -1070,4 +1095,344 @@ function escapeHtml(text) {
 function escapeJs(text) {
     if (!text) return '';
     return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+/* ==========================================================================
+   ✦ إضافات اللوحة: سجل النشاط · النسخ الاحتياطي · أدوات إضافية
+   ========================================================================== */
+
+const ACTIVITY_KEY = 'admin_activity_log';
+const ACTIVITY_MAX = 200;
+let activityLog = [];
+
+/* ------------------------------ سجل النشاط ------------------------------ */
+function loadActivityLog() {
+    try {
+        const raw = localStorage.getItem(ACTIVITY_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        activityLog = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        activityLog = [];
+    }
+}
+
+function saveActivityLog() {
+    try {
+        localStorage.setItem(ACTIVITY_KEY, JSON.stringify(activityLog));
+    } catch (e) {
+        console.error('Activity log save error:', e);
+    }
+}
+
+function logActivity(action, entity, name) {
+    activityLog.unshift({
+        action: action,
+        entity: entity,
+        name: name || '',
+        at: new Date().toISOString(),
+        user: (currentUser && currentUser.email) || ''
+    });
+    if (activityLog.length > ACTIVITY_MAX) {
+        activityLog.length = ACTIVITY_MAX;
+    }
+    saveActivityLog();
+    renderActivityTable();
+}
+
+function renderActivityTable() {
+    const tbody = document.getElementById('activityTableBody');
+    const empty = document.getElementById('activityEmpty');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (!activityLog.length) {
+        if (empty) empty.style.display = 'block';
+        return;
+    }
+    if (empty) empty.style.display = 'none';
+
+    const badge = {
+        'إضافة': 'act-add',
+        'تعديل': 'act-edit',
+        'حذف': 'act-del',
+        'دخول': 'act-in',
+        'خروج': 'act-out'
+    };
+
+    activityLog.forEach(function (item, index) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td><span class="act-badge ${badge[item.action] || 'act-edit'}">${escapeHtml(item.action)}</span></td>
+            <td>${escapeHtml(item.entity)}</td>
+            <td>${item.name ? escapeHtml(item.name) : '—'}</td>
+            <td>${formatDate(item.at)}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function clearActivityLog() {
+    if (!activityLog.length) {
+        showToast('السجل فارغ بالفعل', 'warning');
+        return;
+    }
+    showDeleteModal('هل أنت متأكد من مسح سجل النشاط بالكامل؟<br>لا يمكن التراجع عن هذه العملية.', function () {
+        activityLog = [];
+        saveActivityLog();
+        renderActivityTable();
+        showToast('تم مسح سجل النشاط', 'success');
+    });
+}
+
+/* ------------------------------ تصدير الملفات ------------------------------ */
+function downloadTextFile(filename, content, mime) {
+    const blob = new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+}
+
+function csvCell(value) {
+    const s = value == null ? '' : String(value);
+    return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+// BOM في البداية حتى يقرأ Excel العربية بشكل صحيح
+function buildCsv(header, rows) {
+    const lines = [header].concat(rows).map(function (row) {
+        return row.map(csvCell).join(',');
+    });
+    return '\ufeff' + lines.join('\r\n');
+}
+
+function today() {
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+// تاريخ بأرقام لاتينية ليكون مناسباً لملفات CSV/Excel
+function plainDate(value) {
+    const d = value ? new Date(value) : new Date();
+    if (isNaN(d.getTime())) return '';
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function subjectName(id) {
+    const s = subjects.find(x => x.id === id);
+    return s ? s.name : '';
+}
+
+function departmentNameOfSubject(id) {
+    const s = subjects.find(x => x.id === id);
+    if (!s) return '';
+    const d = departments.find(x => x.id === s.department_id);
+    return d ? d.name : '';
+}
+
+function exportDepartmentsCsv() {
+    if (!departments.length) {
+        showToast('لا توجد أقسام للتصدير', 'warning');
+        return;
+    }
+    const rows = departments.map(function (d, i) {
+        return [i + 1, d.name, (d.subjects && d.subjects[0] && d.subjects[0].count) || 0, plainDate(d.created_at)];
+    });
+    downloadTextFile(`الاقسام-${today()}.csv`, buildCsv(['#', 'اسم القسم', 'عدد المواد', 'تاريخ الإضافة'], rows), 'text/csv;charset=utf-8');
+    showToast('تم تصدير الأقسام بنجاح', 'success');
+}
+
+function exportSubjectsCsv() {
+    if (!subjects.length) {
+        showToast('لا توجد مواد للتصدير', 'warning');
+        return;
+    }
+    const rows = subjects.map(function (s, i) {
+        const d = departments.find(x => x.id === s.department_id);
+        const count = exams.filter(e => e.subject_id === s.id).length;
+        return [i + 1, s.name, d ? d.name : '', count, plainDate(s.created_at)];
+    });
+    downloadTextFile(`المواد-${today()}.csv`, buildCsv(['#', 'اسم المادة', 'القسم', 'عدد الامتحانات', 'تاريخ الإضافة'], rows), 'text/csv;charset=utf-8');
+    showToast('تم تصدير المواد بنجاح', 'success');
+}
+
+function exportExamsCsv() {
+    if (!exams.length) {
+        showToast('لا توجد امتحانات للتصدير', 'warning');
+        return;
+    }
+    const rows = exams.map(function (e, i) {
+        return [
+            i + 1,
+            e.name,
+            subjectName(e.subject_id),
+            departmentNameOfSubject(e.subject_id),
+            e.year,
+            e.semester,
+            e.description || '',
+            e.file_url || '',
+            plainDate(e.created_at)
+        ];
+    });
+    const header = ['#', 'اسم الامتحان', 'المادة', 'القسم', 'السنة', 'الفصل', 'الوصف', 'رابط الملف', 'تاريخ الإضافة'];
+    downloadTextFile(`الامتحانات-${today()}.csv`, buildCsv(header, rows), 'text/csv;charset=utf-8');
+    showToast('تم تصدير الامتحانات بنجاح', 'success');
+}
+
+function exportActivityCsv() {
+    if (!activityLog.length) {
+        showToast('السجل فارغ', 'warning');
+        return;
+    }
+    const rows = activityLog.map(function (a, i) {
+        return [i + 1, a.action, a.entity, a.name, plainDate(a.at), a.user];
+    });
+    const header = ['#', 'العملية', 'النوع', 'العنصر', 'التاريخ والوقت', 'المستخدم'];
+    downloadTextFile(`سجل-النشاط-${today()}.csv`, buildCsv(header, rows), 'text/csv;charset=utf-8');
+    showToast('تم تصدير السجل بنجاح', 'success');
+}
+
+function exportFullBackup() {
+    const payload = {
+        site: 'أرشيف امتحانات كلية الهندسة – جامعة الجفرة',
+        exported_at: new Date().toISOString(),
+        exported_by: (currentUser && currentUser.email) || '',
+        counts: {
+            departments: departments.length,
+            subjects: subjects.length,
+            exams: exams.length,
+            files: exams.filter(e => e.file_url).length
+        },
+        departments: departments.map(d => ({ id: d.id, name: d.name, created_at: d.created_at })),
+        subjects: subjects.map(s => ({ id: s.id, name: s.name, department_id: s.department_id, created_at: s.created_at })),
+        exams: exams.map(e => ({
+            id: e.id, name: e.name, subject_id: e.subject_id, year: e.year,
+            semester: e.semester, description: e.description || null,
+            file_url: e.file_url || null, created_at: e.created_at
+        })),
+        activity: activityLog
+    };
+    downloadTextFile(`نسخة-احتياطية-${today()}.json`, JSON.stringify(payload, null, 2), 'application/json;charset=utf-8');
+    showToast('تم إنشاء النسخة الاحتياطية بنجاح', 'success');
+}
+
+/* ------------------------------ ملخّص الإحصائيات ------------------------------ */
+function statsSummaryText() {
+    const files = exams.filter(e => e.file_url).length;
+    return [
+        'أرشيف امتحانات كلية الهندسة – جامعة الجفرة',
+        `عدد الأقسام: ${departments.length}`,
+        `عدد المواد: ${subjects.length}`,
+        `عدد الامتحانات: ${exams.length}`,
+        `ملفات مرفوعة: ${files}`,
+        `آخر تحديث: ${formatDate(new Date().toISOString())}`
+    ].join('\n');
+}
+
+async function copyStatsSummary() {
+    const text = statsSummaryText();
+    try {
+        await navigator.clipboard.writeText(text);
+        showToast('تم نسخ الملخّص إلى الحافظة', 'success');
+    } catch (e) {
+        // بديل للمتصفحات التي تمنع الوصول للحافظة
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            showToast('تم نسخ الملخّص إلى الحافظة', 'success');
+        } catch (err) {
+            showToast('تعذّر النسخ — انسخ النص يدوياً', 'error');
+        }
+        document.body.removeChild(ta);
+    }
+}
+
+/* ------------------------------ ملخّص تبويب النسخ ------------------------------ */
+function renderBackupSummary() {
+    const box = document.getElementById('backupSummary');
+    if (!box) return;
+    const files = exams.filter(e => e.file_url).length;
+    const cards = [
+        { icon: 'fa-building-columns', value: departments.length, label: 'قسم' },
+        { icon: 'fa-book', value: subjects.length, label: 'مادة' },
+        { icon: 'fa-file-pdf', value: exams.length, label: 'امتحان' },
+        { icon: 'fa-cloud', value: files, label: 'ملف PDF' }
+    ];
+    box.innerHTML = cards.map(function (c) {
+        return `<div class="backup-stat">
+                    <i class="fas ${c.icon}"></i>
+                    <strong>${c.value}</strong>
+                    <span>${c.label}</span>
+                </div>`;
+    }).join('');
+}
+
+/* ------------------------------ الربط والتفاعل ------------------------------ */
+function setupAdminExtras() {
+    const on = function (id, handler) {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', handler);
+    };
+
+    // أزرار الترويسة
+    on('refreshBtn', async function () {
+        showToast('جاري تحديث البيانات...', 'info', 1500);
+        await loadAllData();
+        renderBackupSummary();
+        showToast('تم تحديث البيانات', 'success');
+    });
+
+    on('sidebarToggle', function () {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
+        const isOpen = sidebar.classList.toggle('open');
+        this.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+
+    // أزرار التصدير في التبويبات
+    on('exportDeptBtn', exportDepartmentsCsv);
+    on('exportSubjBtn', exportSubjectsCsv);
+    on('exportExamBtn', exportExamsCsv);
+    on('exportActivityBtn', exportActivityCsv);
+
+    // سجل النشاط
+    on('clearActivityBtn', clearActivityLog);
+
+    // النسخ الاحتياطي
+    on('backupJsonBtn', exportFullBackup);
+    on('backupDeptCsvBtn', exportDepartmentsCsv);
+    on('backupSubjCsvBtn', exportSubjectsCsv);
+    on('backupExamCsvBtn', exportExamsCsv);
+    on('copySummaryBtn', copyStatsSummary);
+    on('refreshBackupBtn', function () {
+        renderBackupSummary();
+        showToast('تم تحديث الأرقام', 'success');
+    });
+
+    // إغلاق القائمة الجانبية بالنقر خارجها على الشاشات الصغيرة
+    document.addEventListener('click', function (e) {
+        const sidebar = document.getElementById('sidebar');
+        const toggle = document.getElementById('sidebarToggle');
+        if (!sidebar || !sidebar.classList.contains('open')) return;
+        if (sidebar.contains(e.target) || (toggle && toggle.contains(e.target))) return;
+        sidebar.classList.remove('open');
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    });
+
+    renderActivityTable();
+    renderBackupSummary();
 }

@@ -54,9 +54,12 @@
                 <h2>لوحة الإدارة</h2>
             </div>
             <nav class="sidebar-nav">
+                <span class="nav-label">نظرة عامة</span>
                 <button class="nav-item active" data-tab="dashboard" aria-current="page">
                     <i class="fas fa-chart-pie"></i> الإحصائيات
                 </button>
+
+                <span class="nav-label">إدارة المحتوى</span>
                 <button class="nav-item" data-tab="departments">
                     <i class="fas fa-building-columns"></i> الأقسام الدراسية
                 </button>
@@ -65,6 +68,14 @@
                 </button>
                 <button class="nav-item" data-tab="exams">
                     <i class="fas fa-file-pdf"></i> الامتحانات
+                </button>
+
+                <span class="nav-label">النظام</span>
+                <button class="nav-item" data-tab="activity">
+                    <i class="fas fa-clock-rotate-left"></i> سجل النشاط
+                </button>
+                <button class="nav-item" data-tab="backup">
+                    <i class="fas fa-cloud-arrow-down"></i> النسخ الاحتياطي
                 </button>
             </nav>
             <div class="sidebar-footer">
@@ -78,10 +89,24 @@
         <main class="main-content">
             <header class="admin-header">
                 <div class="header-top">
-                    <h1 id="pageTitle">لوحة التحكم - الإحصائيات</h1>
-                    <div class="admin-user">
-                        <i class="fas fa-user-circle"></i>
-                        <span id="userEmail">-</span>
+                    <div class="header-title">
+                        <button type="button" class="icon-btn sidebar-toggle" id="sidebarToggle"
+                                aria-label="إظهار أو إخفاء القائمة الجانبية" aria-expanded="false">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 id="pageTitle">لوحة التحكم - الإحصائيات</h1>
+                    </div>
+                    <div class="header-actions">
+                        <button type="button" class="icon-btn" id="refreshBtn" title="تحديث البيانات">
+                            <i class="fas fa-rotate"></i>
+                        </button>
+                        <a class="icon-btn" href="index.html" target="_blank" rel="noopener" title="عرض الموقع">
+                            <i class="fas fa-globe"></i>
+                        </a>
+                        <div class="admin-user">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="userEmail">-</span>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -138,9 +163,14 @@
             <div id="departmentsTab" class="tab-content">
                 <div class="tab-header">
                     <h2 class="tab-title">إدارة الأقسام الدراسية</h2>
-                    <button type="button" class="btn btn-primary" id="addDeptBtn">
-                        <i class="fas fa-plus"></i> إضافة قسم جديد
-                    </button>
+                    <div class="tab-actions">
+                        <button type="button" class="btn btn-ghost" id="exportDeptBtn" title="تنزيل جدول الأقسام بصيغة CSV">
+                            <i class="fas fa-file-csv"></i> تصدير CSV
+                        </button>
+                        <button type="button" class="btn btn-primary" id="addDeptBtn">
+                            <i class="fas fa-plus"></i> إضافة قسم جديد
+                        </button>
+                    </div>
                 </div>
                 <div class="table-wrapper">
                     <table class="data-table">
@@ -166,9 +196,14 @@
             <div id="subjectsTab" class="tab-content">
                 <div class="tab-header">
                     <h2 class="tab-title">إدارة المواد الدراسية</h2>
-                    <button type="button" class="btn btn-primary" id="addSubjBtn">
-                        <i class="fas fa-plus"></i> إضافة مادة جديدة
-                    </button>
+                    <div class="tab-actions">
+                        <button type="button" class="btn btn-ghost" id="exportSubjBtn" title="تنزيل جدول المواد بصيغة CSV">
+                            <i class="fas fa-file-csv"></i> تصدير CSV
+                        </button>
+                        <button type="button" class="btn btn-primary" id="addSubjBtn">
+                            <i class="fas fa-plus"></i> إضافة مادة جديدة
+                        </button>
+                    </div>
                 </div>
                 <div class="filters">
                     <select id="deptFilter" class="filter-select" aria-label="فلتر حسب القسم">
@@ -201,9 +236,14 @@
             <div id="examsTab" class="tab-content">
                 <div class="tab-header">
                     <h2 class="tab-title">إدارة الامتحانات</h2>
-                    <button type="button" class="btn btn-primary" id="addExamBtn">
-                        <i class="fas fa-plus"></i> إضافة امتحان جديد
-                    </button>
+                    <div class="tab-actions">
+                        <button type="button" class="btn btn-ghost" id="exportExamBtn" title="تنزيل جدول الامتحانات بصيغة CSV">
+                            <i class="fas fa-file-csv"></i> تصدير CSV
+                        </button>
+                        <button type="button" class="btn btn-primary" id="addExamBtn">
+                            <i class="fas fa-plus"></i> إضافة امتحان جديد
+                        </button>
+                    </div>
                 </div>
                 <div class="filters">
                     <select id="examDeptFilter" class="filter-select" aria-label="فلتر حسب القسم">
@@ -234,6 +274,89 @@
                 <div class="empty-state" id="examTableEmpty" style="display: none;">
                     <i class="fas fa-file-circle-xmark"></i>
                     <p>لا توجد امتحانات مضافة حتى الآن</p>
+                </div>
+            </div>
+
+            <!-- Activity Log Tab -->
+            <div id="activityTab" class="tab-content">
+                <div class="tab-header">
+                    <h2 class="tab-title">سجل النشاط</h2>
+                    <div class="tab-actions">
+                        <button type="button" class="btn btn-ghost" id="exportActivityBtn">
+                            <i class="fas fa-file-export"></i> تصدير السجل
+                        </button>
+                        <button type="button" class="btn btn-danger-ghost" id="clearActivityBtn">
+                            <i class="fas fa-eraser"></i> مسح السجل
+                        </button>
+                    </div>
+                </div>
+                <p class="tab-hint">
+                    <i class="fas fa-circle-info"></i>
+                    يسجّل آخر 200 عملية أجريتها في اللوحة (إضافة، تعديل، حذف، دخول، خروج) — محفوظ في متصفحك فقط.
+                </p>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">العملية</th>
+                                <th scope="col">النوع</th>
+                                <th scope="col">العنصر</th>
+                                <th scope="col">التاريخ والوقت</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="activityEmpty" style="display: none;">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <p>لا يوجد نشاط مسجّل حتى الآن</p>
+                </div>
+            </div>
+
+            <!-- Backup Tab -->
+            <div id="backupTab" class="tab-content">
+                <div class="tab-header">
+                    <h2 class="tab-title">النسخ الاحتياطي والتصدير</h2>
+                    <div class="tab-actions">
+                        <button type="button" class="btn btn-ghost" id="refreshBackupBtn">
+                            <i class="fas fa-rotate"></i> تحديث الأرقام
+                        </button>
+                    </div>
+                </div>
+                <p class="tab-hint">
+                    <i class="fas fa-shield-halved"></i>
+                    نزّل نسخة من بياناتك بضغطة واحدة — ملفات PDF محفوظة في Supabase Storage ولا تتأثر بالتصدير.
+                </p>
+
+                <div class="backup-summary" id="backupSummary"></div>
+
+                <div class="backup-grid">
+                    <button type="button" class="backup-card" id="backupJsonBtn">
+                        <span class="backup-icon"><i class="fas fa-file-code"></i></span>
+                        <h3>نسخة كاملة (JSON)</h3>
+                        <p>الأقسام والمواد والامتحانات وسجل النشاط في ملف واحد</p>
+                    </button>
+                    <button type="button" class="backup-card" id="backupDeptCsvBtn">
+                        <span class="backup-icon"><i class="fas fa-building-columns"></i></span>
+                        <h3>الأقسام (CSV)</h3>
+                        <p>جدول جاهز للفتح في Excel</p>
+                    </button>
+                    <button type="button" class="backup-card" id="backupSubjCsvBtn">
+                        <span class="backup-icon"><i class="fas fa-book"></i></span>
+                        <h3>المواد (CSV)</h3>
+                        <p>اسم المادة والقسم التابع لها</p>
+                    </button>
+                    <button type="button" class="backup-card" id="backupExamCsvBtn">
+                        <span class="backup-icon"><i class="fas fa-file-pdf"></i></span>
+                        <h3>الامتحانات (CSV)</h3>
+                        <p>مع روابط ملفات PDF</p>
+                    </button>
+                    <button type="button" class="backup-card" id="copySummaryBtn">
+                        <span class="backup-icon"><i class="fas fa-clipboard-list"></i></span>
+                        <h3>نسخ الملخّص</h3>
+                        <p>ملخّص الإحصائيات إلى الحافظة</p>
+                    </button>
                 </div>
             </div>
         </main>
