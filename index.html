@@ -83,6 +83,21 @@
         </div>
     </section>
 
+    <!-- Study Timetables Section -->
+    <section class="timetables-section" id="timetablesSection" style="display: none;">
+        <div class="container">
+            <h2 class="section-title" data-symbol="&#916;">
+                <i class="fas fa-table-list"></i> الجداول الدراسية
+                <span class="section-subtitle">الفصل الحالي</span>
+            </h2>
+            <p class="timetables-note">
+                <i class="fas fa-circle-info"></i>
+                جدول الفصل الدراسي الذي ندرسه حالياً — اضغط على الجدول لعرضه بحجم كامل مع التكبير والتحميل.
+            </p>
+            <div class="timetables-grid" id="timetablesGrid"></div>
+        </div>
+    </section>
+
     <!-- Main Content -->
     <main class="main">
         <div class="container">
@@ -198,10 +213,57 @@
         </div>
     </div>
 
+    <!-- Timetable Viewer -->
+    <div class="tv-modal" id="timetableViewer" role="dialog" aria-modal="true" aria-labelledby="tvTitle">
+        <div class="tv-backdrop"></div>
+        <div class="tv-panel">
+            <header class="tv-header">
+                <div class="tv-title">
+                    <i class="fas fa-table-list"></i>
+                    <div>
+                        <h3 id="tvTitle">الجدول الدراسي</h3>
+                        <span id="tvMeta"></span>
+                    </div>
+                </div>
+                <div class="tv-tools">
+                    <button type="button" class="tv-btn" id="tvZoomOut" title="تصغير" aria-label="تصغير">
+                        <i class="fas fa-magnifying-glass-minus"></i>
+                    </button>
+                    <span class="tv-zoom-level" id="tvZoomLevel">100%</span>
+                    <button type="button" class="tv-btn" id="tvZoomIn" title="تكبير" aria-label="تكبير">
+                        <i class="fas fa-magnifying-glass-plus"></i>
+                    </button>
+                    <button type="button" class="tv-btn" id="tvReset" title="الحجم الأصلي" aria-label="الحجم الأصلي">
+                        <i class="fas fa-arrows-rotate"></i>
+                    </button>
+                    <a class="tv-btn tv-btn--download" id="tvDownload" href="#" download title="تحميل الجدول" aria-label="تحميل الجدول">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    <a class="tv-btn" id="tvOpen" href="#" target="_blank" rel="noopener noreferrer" title="فتح في نافذة جديدة" aria-label="فتح في نافذة جديدة">
+                        <i class="fas fa-up-right-from-square"></i>
+                    </a>
+                    <button type="button" class="tv-btn tv-btn--close" id="tvClose" title="إغلاق" aria-label="إغلاق">
+                        <i class="fas fa-xmark"></i>
+                    </button>
+                </div>
+            </header>
+            <div class="tv-stage" id="tvStage">
+                <img id="tvImage" alt="">
+            </div>
+            <footer class="tv-footer">
+                <span><i class="fas fa-hand-pointer"></i> اسحب الصورة للتحرك</span>
+                <span><i class="fas fa-computer-mouse"></i> عجلة الفأرة للتكبير</span>
+                <span><i class="fas fa-magnifying-glass-plus"></i> نقرة مزدوجة للتكبير السريع</span>
+                <span><i class="fas fa-keyboard"></i> Esc للإغلاق</span>
+            </footer>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="js/config.js"></script>
+    <script src="js/timetables.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
