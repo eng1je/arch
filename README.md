@@ -36,6 +36,10 @@
 - **Row Level Security (RLS)** في قاعدة البيانات: الزوار يقرؤون فقط، والمدير فقط يكتب.
 - **Storage Policies**: قراءة عامة لملفات PDF، والرفع/الحذف للمدير المسجل فقط.
 - لا توجد أي مفاتيح سرية (`service_role`) داخل ملفات المشروع — فقط `anon` العام المخصص للمتصفح.
+- 🔒 **الكتابة مقيّدة ببريد المدير**: نفّذ `supabase/restrict-admin-write.sql` لتصبح الكتابة
+  لصاحب البريد في جدول `admins` فقط — حتى لو نجح أي شخص في إنشاء حساب لن يستطيع تعديل الأرشيف.
+- 🚫 **أوقف التسجيل العام**: من Supabase ← **Authentication** ← **Sign In / Providers**
+  ← أوقف **Allow new users to sign up**. (أنشئ حسابات المديرين بنفسك من Authentication ← Users.)
 
 ---
 
@@ -77,9 +81,9 @@
 │     ├─ civil-general.png    # جدول العام والهندسة المدنية
 │     └─ civil-general-thumb.webp
 ├─ supabase/
-│  ├─ schema.sql              # ⭐ ملف إعداد قاعدة البيانات والتخزين
+│  ├─ schema.sql                 # ⭐ ملف إعداد قاعدة البيانات والتخزين
+│  ├─ restrict-admin-write.sql   # 🔒 تقييد الكتابة على بريد المدير فقط
 │  └─ raise-file-size-limit.sql  # رفع حد حجم ملفات PDF إلى 50 ميجابايت
-├─ .github/workflows/deploy.yml  # نشر تلقائي على GitHub Pages
 ├─ SUPABASE_SETUP.md          # دليل إعداد مفصّل
 ├─ .env.example               # أسماء متغيرات البيئة (بدون أسرار)
 ├─ .gitignore
@@ -162,17 +166,30 @@ const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
 
 ## 🌐 النشر على GitHub (مجاناً)
 
-### الطريقة الأسهل: GitHub Pages + النشر التلقائي
-المشروع يتضمن جاهزاً ملف `.github/workflows/deploy.yml`.
-
-1. أنشئ مستودعاً جديداً على GitHub (بدون README).
+### GitHub Pages — النشر التلقائي من الفرع
+1. أنشئ مستودعاً جديداً على GitHub (**Public**، وبدون README).
 2. اربط المستودع وارفع الملفات:
    ```bash
    git remote add origin https://github.com/USERNAME/REPO-NAME.git
    git push -u origin main
    ```
-3. في المستودع: **Settings** ← **Pages** ← **Source** ← اختر **GitHub Actions**.
-4. انتظر دقيقة، وسيظهر رابط موقعك في تبويب **Actions** وفي **Settings ← Pages**.
+3. في المستودع: **Settings** ← **Pages** ← **Build and deployment**:
+   - **Source:** `Deploy from a branch`
+   - **Branch:** `main` — المجلد: `/ (root)`
+   - اضغط **Save**
+4. انتظر دقيقة، وسيظهر رابط موقعك في **Settings ← Pages**.
+
+بعدها كل تحديث يُنشر بأمر واحد:
+```bash
+git add -A
+git commit -m "تحديث"
+git push
+```
+وتابع عملية النشر في تبويب **Actions** ← `pages-build-deployment` (يجب أن تظهر ✅).
+
+> ⚠️ **لا ترفع الملفات من واجهة GitHub بالسحب والإفلات:** فهي تتجاهل ملف
+> `.gitignore` وترفع الصور الأصلية الضخمة، ولا ترفع أي ملف/مجلد يبدأ بنقطة
+> (مثل `.nojekyll`). استخدم `git push` دائماً — أنظف وأسرع.
 
 رابط النشر سيكون مثل: `https://USERNAME.github.io/REPO-NAME/`
 
