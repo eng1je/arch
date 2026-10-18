@@ -1,241 +1,105 @@
 # دليل إعداد Supabase خطوة بخطوة
 
-هذا الدليل يوضح كيفية إعداد قاعدة البيانات والتخزين والمصادقة في Supabase للمشروع.
+دليل مفصّل لإعداد قاعدة البيانات والتخزين والمصادقة.
+للنسخة السريعة راجع قسم «التشغيل في 3 خطوات» في [README.md](README.md).
 
-## 1. إنشاء مشروع Supabase
+---
 
-1. اذهب إلى [https://app.supabase.com/](https://app.supabase.com/)
-2. سجل الدخول أو أنشئ حساب جديد
-3. انقر على "New Project"
-4. اختر منظمة (Organization)
-5. املأ البيانات:
-   - Name: `engineering-exams-archive`
-   - Database Password: أنشئ كلمة مرور قوية (احفظها)
-   - Region: اختر أقرب منطقة لك
-6. انقر على "Create New Project"
-7. انتظر عدة دقائق حتى يكتمل الإعداد
+## 1) إنشاء مشروع Supabase
 
-## 2. الحصول على المفاتيح
+1. اذهب إلى [https://app.supabase.com/](https://app.supabase.com/) وسجّل الدخول.
+2. اضغط **New Project**.
+3. املأ:
+   - **Name:** `engineering-exams-archive`
+   - **Database Password:** كلمة مرور قوية (احفظها)
+   - **Region:** أقرب منطقة جغرافية
+4. اضغط **Create New Project** وانتظر دقيقة حتى يكتمل الإنشاء.
 
-1. من Dashboard المشروع، اذهب إلى `Settings > API`
-2. ستجد:
-   - `Project URL` - سنستخدمه في config.js
-   - `anon public` key - مفتاح عام للاستخدام في الواجهة الأمامية
-   - `service_role secret` key - حساس جداً (لا نستخدمه في الواجهة الأمامية)
+## 2) الحصول على المفاتيح
 
-المفاتيح المستخدمة حالياً موجودة في ملف `js/config.js`. يمكنك تحديثها إذا كنت تريد استخدام مشروعك الخاص.
+من **Settings ← API** ستجد:
 
-## 3. إعداد قاعدة البيانات (SQL)
+| المفتاح | الاستخدام | مكانه |
+|---|---|---|
+| `Project URL` | عنوان المشروع | `js/config.js` |
+| `anon public` | مفتاح عام للمتصفح | `js/config.js` |
+| `service_role` | **سري جداً** — لا يُستخدم في الواجهة | لا يوضع في المشروع أبداً |
 
-1. من Dashboard، اذهب إلى `SQL Editor > New query`
-2. انسخ الكود SQL التالي بالكامل
-3. انقر على "Run" لتشغيله
+## 3) إنشاء الجداول وسياسات الحماية
 
-```sql
--- إنشاء جدول الأقسام
-CREATE TABLE IF NOT EXISTS departments (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+1. من القائمة الجانبية: **SQL Editor** ← **New query**.
+2. انسخ كامل محتوى الملف [`supabase/schema.sql`](supabase/schema.sql).
+3. اضغط **Run**.
 
--- إنشاء جدول المواد
-CREATE TABLE IF NOT EXISTS subjects (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  department_id UUID NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(name, department_id)
-);
+يُنشئ الملف:
 
--- إنشاء جدول الامتحانات
-CREATE TABLE IF NOT EXISTS exams (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  subject_id UUID NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
-  year INTEGER NOT NULL CHECK (year >= 1990 AND year <= 2030),
-  semester VARCHAR(50) NOT NULL CHECK (semester IN ('الاول', 'الثاني', 'الصيفي', 'كليهما')),
-  description TEXT,
-  file_url TEXT NOT NULL,
-  file_path TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+- جداول: `departments`، `subjects`، `exams` (مع مفاتيح أجنبية وحذف تلقائي متسلسل `ON DELETE CASCADE`).
+- فهارس لتسريع الاستعلامات.
+- دوال ومشغّلات (Triggers) لتحديث `updated_at` تلقائياً.
+- تفعيل **RLS** + سياسات:
+  - قراءة عامة (`SELECT`) للجميع.
+  - كتابة/تعديل/حذف (`ALL`) للمستخدم المسجّل فقط.
+- سلة التخزين `exam-files` (عامة، حد 10 ميجابايت، PDF فقط) + سياساتها.
 
--- تفعيل RLS (Row Level Security)
-ALTER TABLE departments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE subjects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE exams ENABLE ROW LEVEL SECURITY;
+> الملف **آمن للتنفيذ أكثر من مرة** (Idempotent)، لذا يمكنك إعادة تشغيله عند الحاجة.
 
--- سياسات قراءة عامة (للزوار)
-DROP POLICY IF EXISTS "Anyone can view departments" ON departments;
-CREATE POLICY "Anyone can view departments" ON departments FOR SELECT USING (true);
+## 4) التحقق من سلة التخزين
 
-DROP POLICY IF EXISTS "Anyone can view subjects" ON subjects;
-CREATE POLICY "Anyone can view subjects" ON subjects FOR SELECT USING (true);
+من **Storage** يجب أن تجد سلة باسم **`exam-files`**:
+- **Public bucket:** ✅ مفعّل (مهم لعرض وتحميل الملفات).
+- **File size limit:** 10 MB.
+- **Allowed MIME types:** `application/pdf`.
 
-DROP POLICY IF EXISTS "Anyone can view exams" ON exams;
-CREATE POLICY "Anyone can view exams" ON exams FOR SELECT USING (true);
+وفي تبويب **Policies** يجب أن تجد 4 سياسات: قراءة عامة + إدارة للمسجلين.
+(تُنشأ تلقائياً عبر `schema.sql`.)
 
--- سياسات الكتابة/التعديل/الحذف للمستخدمين المسجلين (المدير فقط)
-DROP POLICY IF EXISTS "Authenticated users can insert departments" ON departments;
-CREATE POLICY "Authenticated users can insert departments" ON departments FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+## 5) إنشاء حساب المدير
 
-DROP POLICY IF EXISTS "Authenticated users can update departments" ON departments;
-CREATE POLICY "Authenticated users can update departments" ON departments FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+**الطريقة المُوصى بها** (من لوحة Supabase):
 
-DROP POLICY IF EXISTS "Authenticated users can delete departments" ON departments;
-CREATE POLICY "Authenticated users can delete departments" ON departments FOR DELETE USING (auth.role() = 'authenticated');
+1. **Authentication ← Users**
+2. **Add user ← Create new user**
+3. أدخل البريد الإلكتروني وكلمة المرور.
+4. اضغط **Create user**.
 
-DROP POLICY IF EXISTS "Authenticated users can insert subjects" ON subjects;
-CREATE POLICY "Authenticated users can insert subjects" ON subjects FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+> إن أردت منع التسجيل العام، من **Authentication ← Providers ← Email**
+> أوقف خيار **Enable sign ups** — لوحة الإدارة في هذا المشروع لا تتضمن نموذج تسجيل أصلاً،
+> والدخول يتم بالحساب المُنشأ فقط.
 
-DROP POLICY IF EXISTS "Authenticated users can update subjects" ON subjects;
-CREATE POLICY "Authenticated users can update subjects" ON subjects FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
+## 6) ربط المشروع بالمفاتيح
 
-DROP POLICY IF EXISTS "Authenticated users can delete subjects" ON subjects;
-CREATE POLICY "Authenticated users can delete subjects" ON subjects FOR DELETE USING (auth.role() = 'authenticated');
+افتح `js/config.js` وتأكد من:
 
-DROP POLICY IF EXISTS "Authenticated users can insert exams" ON exams;
-CREATE POLICY "Authenticated users can insert exams" ON exams FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
-DROP POLICY IF EXISTS "Authenticated users can update exams" ON exams;
-CREATE POLICY "Authenticated users can update exams" ON exams FOR UPDATE USING (auth.role() = 'authenticated') WITH CHECK (auth.role() = 'authenticated');
-
-DROP POLICY IF EXISTS "Authenticated users can delete exams" ON exams;
-CREATE POLICY "Authenticated users can delete exams" ON exams FOR DELETE USING (auth.role() = 'authenticated');
-
--- إنشاء Triggers لتحديث updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS update_departments_updated_at ON departments;
-CREATE TRIGGER update_departments_updated_at
-BEFORE UPDATE ON departments
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
-DROP TRIGGER IF EXISTS update_subjects_updated_at ON subjects;
-CREATE TRIGGER update_subjects_updated_at
-BEFORE UPDATE ON subjects
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
-DROP TRIGGER IF EXISTS update_exams_updated_at ON exams;
-CREATE TRIGGER update_exams_updated_at
-BEFORE UPDATE ON exams
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
+```js
+const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
 ```
 
-## 4. إعداد Storage (ملفات PDF)
+ثم شغّل الموقع بخادم محلي (مثال: `npx serve .`).
 
-1. من Dashboard، اذهب إلى `Storage`
-2. انقر على "New bucket"
-3. املأ:
-   - Name: `exam-files`
-   - Make public: ✅ ضع علامة (مهم لعرض وتحميل الملفات)
-4. انقر على "Create bucket"
+## 7) اختبار كامل
 
-### إعداد سياسات Storage
+1. `admin.html` ← سجّل الدخول.
+2. أضف قسماً ثم مادة ثم امتحاناً مع ملف PDF.
+3. `index.html` ← تصفح القسم/المادة، وجرّب المعاينة والتحميل والبحث.
+4. جرّب تعديل واستبدال ملف، ثم حذف (مع رسالة التأكيد).
+5. تحقق من أن الحذف أزال الملف من **Storage**.
 
-1. في Bucket `exam-files`، اذهب إلى تبويب `Policies`
-2. انقر على "New policy" > "Create from scratch"
+## 8) حل المشاكل
 
-**سياسة 1: قراءة عامة (Public Access)**
-- Policy name: `Public Access`
-- Allowed operation: `SELECT`
-- Target roles: `public`
-- Expression: `bucket_id = 'exam-files'`
-- انقر "Save"
+| المشكلة | الحل |
+|---|---|
+| «جداول قاعدة البيانات غير موجودة» | نفّذ `supabase/schema.sql` |
+| «سلة التخزين غير موجودة» | تأكد من تنفيذ `schema.sql` أو أنشئ bucket باسم `exam-files` |
+| فشل رفع الملف (RLS) | تأكد من تسجيل دخول المدير، ومن سياسات `storage.objects` |
+| الملف لا يُعرض للزوار | اجعل السلة **Public** |
+| تعذّر الدخول | أنشئ مستخدماً من Authentication ← Users |
 
-**سياسة 2: رفع الملفات للمسجلين**
-- Policy name: `Authenticated users can upload`
-- Allowed operation: `INSERT`
-- Target roles: `authenticated`
-- Expression: `bucket_id = 'exam-files'`
-- انقر "Save"
+---
 
-**سياسة 3: تحديث الملفات للمسجلين**
-- Policy name: `Authenticated users can update`
-- Allowed operation: `UPDATE`
-- Target roles: `authenticated`
-- Expression: `bucket_id = 'exam-files'`
-- انقر "Save"
+## ملاحظات أمنية مهمة
 
-**سياسة 4: حذف الملفات للمسجلين**
-- Policy name: `Authenticated users can delete`
-- Allowed operation: `DELETE`
-- Target roles: `authenticated`
-- Expression: `bucket_id = 'exam-files'`
-- انقر "Save"
-
-## 5. إعداد المصادقة (Authentication)
-
-1. من Dashboard، اذهب إلى `Authentication > Providers`
-2. ابحث عن `Email` وقم بتفعيل `Email Provider` (مفعل افتراضياً)
-3. يمكنك ترك الإعدادات الافتراضية
-
-### إنشاء حساب المدير
-
-هناك طريقتين لإنشاء حساب المدير:
-
-**الطريقة 1: من لوحة الإدارة (تسجيل حساب)**
-1. افتح الموقع `admin.html`
-2. يمكنك التسجيل بحساب جديد (إذا تم السماح بالتسجيل - الإعدادات الافتراضية تسمح)
-3. لكن يفضل الطريقة 2 للحماية
-
-**الطريقة 2: من Supabase Dashboard (مُوصى به)**
-1. اذهب إلى `Authentication > Users`
-2. انقر على "Add user" > "Create new user"
-3. أدخل:
-   - Email: البريد الإلكتروني للمدير
-   - Password: كلمة المرور
-4. انقر "Create user"
-
-الآن يمكن استخدام هذا الحساب لتسجيل الدخول إلى لوحة الإدارة.
-
-## 6. اختبار الإعداد
-
-1. افتح `index.html` في المتصفح
-2. تحقق من ظهور الأقسام (ستكون فارغة في البداية)
-3. افتح `admin.html` وسجل الدخول بالحساب المدخل
-4. جرب إضافة قسم ثم مادة ثم امتحان مع رفع ملف PDF
-5. تحقق من ظهور البيانات في الواجهة الأمامية
-6. جرب معاينة وتحميل ملف PDF
-7. جرب البحث
-
-## 7. حل المشاكل الشائعة
-
-### الملفات لا تُرفع
-- تحقق من أن Bucket `exam-files` عام (Public)
-- تحقق من Storage Policies (INSERT للمسجلين)
-- تحقق من حجم الملف (يجب أن يكون أقل من 10 ميجابايت)
-- تأكد من أن الملف بصيغة PDF
-
-### لا يمكن الدخول للوحة الإدارة
-- تأكد من بيانات البريد/كلمة المرور صحيحة
-- تحقق من أن Email Provider مفعل في Authentication
-
-### البيانات لا تظهر
-- تحقق من RLS Policies (SELECT عام)
-- تحقق من اتصال Supabase في `js/config.js`
-
-### أخطاء CORS
-- Supabase يدعم CORS تلقائياً للتشغيل المحلي والنشر
-
-## ملاحظات مهمة
-
-- **anon key** آمن للاستخدام في الواجهة الأمامية طالما تم إعداد RLS بشكل صحيح
-- **service_role key** يجب ألا يظهر أبداً في الكود الأمامي أو في مستودع عام
-- ملفات PDF تُخزن في Storage وسعر URL عام لها
-- عند حذف امتحان، يتم حذف ملف PDF المرتبط به تلقائياً من Storage
-
-مبروك! تم إعداد المشروع بنجاح ✅
+- `anon key` **آمن** للاستخدام في المتصفح عند تفعيل RLS بشكل صحيح.
+- `service_role` / `sb_secret_...` **لا يوضع أبداً** في كود الواجهة أو مستودع عام.
+- الملفات العامة في `exam-files` يمكن قراءتها برابط مباشر (وهذا هو المطلوب للمعاينة والتحميل).
+- عمليات الإدارة كلها محمية بسياسات قاعد البيانات، وليس بالواجهة فقط.

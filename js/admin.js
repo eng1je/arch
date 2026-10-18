@@ -47,19 +47,25 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function initializeAdmin() {
-    if (!supabase) {
+    if (!db) {
         showToast('خطأ في إعدادات Supabase. يرجى التحقق من ملف config.js', 'error');
         return;
     }
     
     setupEventListenersAdmin();
+    db.auth.onAuthStateChange(function (event) {
+        if (event === 'SIGNED_OUT') {
+            currentUser = null;
+            showLoginForm();
+        }
+    });
     await checkAuth();
 }
 
 // Check authentication
 async function checkAuth() {
     try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await db.auth.getSession();
         if (error) throw error;
         
         if (session) {
@@ -248,7 +254,7 @@ async function handleLogin(e) {
     loginBtn.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; margin: 0 10px;"></div> جاري تسجيل الدخول...';
     
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await db.auth.signInWithPassword({
             email: email,
             password: password
         });
@@ -262,7 +268,7 @@ async function handleLogin(e) {
         e.target.reset();
     } catch (error) {
         console.error('Login error:', error);
-        showToast(error.message || 'حدث خطأ في تسجيل الدخول', 'error');
+        showToast(translateAuthError(error), 'error');
     } finally {
         loginBtn.disabled = false;
         loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> تسجيل الدخول';
@@ -272,24 +278,22 @@ async function handleLogin(e) {
 // Handle logout
 async function handleLogout() {
     try {
-        const { error } = await supabase.auth.signOut();
+        const { error } = await db.auth.signOut();
         if (error) throw error;
         currentUser = null;
         showToast('تم تسجيل الخروج بنجاح', 'success');
         showLoginForm();
     } catch (error) {
         console.error('Logout error:', error);
-        showToast('حدث خطأ في تسجيل الخروج', 'error');
+        showToast('تعذّر تسجيل الخروج — ' + translateAuthError(error), 'error');
     }
 }
 
-// Load all data
+// Load all data (sequential so the dependent dropdowns are filled in order)
 async function loadAllData() {
-    await Promise.all([
-        loadDepartmentsAdmin(),
-        loadSubjectsAdmin(),
-        loadExamsAdmin()
-    ]);
+    await loadDepartmentsAdmin();
+    await loadSubjectsAdmin();
+    await loadExamsAdmin();
     updateStats();
 }
 
@@ -304,7 +308,7 @@ function updateStats() {
 // Departments
 async function loadDepartmentsAdmin() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from(TABLE_DEPARTMENTS)
             .select('*, subjects(count)')
             .order('created_at', { ascending: true });
@@ -315,7 +319,7 @@ async function loadDepartmentsAdmin() {
         populateDeptSelects();
     } catch (error) {
         console.error('Error loading departments:', error);
-        showToast('حدث خطأ في تحميل الأقسام', 'error');
+        showToast('تعذّر تحميل الأقسام — ' + translateDbError(error), 'error');
     }
 }
 
@@ -429,7 +433,7 @@ async function handleDeptSubmit(e) {
     try {
         if (deptId) {
             // Update
-            const { error } = await supabase
+            const { error } = await db
                 .from(TABLE_DEPARTMENTS)
                 .update({ name: deptName, updated_at: new Date().toISOString() })
                 .eq('id', deptId);
@@ -437,7 +441,7 @@ async function handleDeptSubmit(e) {
             showToast('تم تحديث القسم بنجاح', 'success');
         } else {
             // Insert
-            const { error } = await supabase
+            const { error } = await db
                 .from(TABLE_DEPARTMENTS)
                 .insert([{ name: deptName }]);
             if (error) throw error;
@@ -449,7 +453,7 @@ async function handleDeptSubmit(e) {
         updateStats();
     } catch (error) {
         console.error('Dept save error:', error);
-        showToast('حدث خطأ أثناء حفظ القسم', 'error');
+        showToast('تعذّر حفظ القسم — ' + translateDbError(error), 'error');
     } finally {
         saveBtn.disabled = false;
         saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ';
@@ -466,7 +470,14 @@ function editDepartment(id) {
 function deleteDepartment(id, name) {
     showDeleteModal(`هل أنت متأكد من حذف القسم "${name}"؟<br>سيتم حذف جميع المواد والامتحانات المرتبطة به أيضاً. لا يمكن التراجع عن هذه العملية.`, async function() {
         try {
-            const { error } = await supabase
+            // Remove the PDF files of every exam inside this department (best effort)
+            const { data: related } = await db
+                .from(TABLE_EXAMS)
+                .select('file_path, subjects!inner(department_id)')
+                .eq('subjects.department_id', id);
+            await removeStorageFiles((related || []).map(e => e.file_path));
+
+            const { error } = await db
                 .from(TABLE_DEPARTMENTS)
                 .delete()
                 .eq('id', id);
@@ -475,15 +486,26 @@ function deleteDepartment(id, name) {
             await loadAllData();
         } catch (error) {
             console.error('Delete dept error:', error);
-            showToast('حدث خطأ أثناء حذف القسم', 'error');
+            showToast('تعذّر حذف القسم — ' + translateDbError(error), 'error');
         }
     });
+}
+
+// Remove files from storage (ignores missing paths and errors)
+async function removeStorageFiles(paths) {
+    const list = (paths || []).filter(Boolean);
+    if (list.length === 0) return;
+    try {
+        await db.storage.from(STORAGE_BUCKET).remove(list);
+    } catch (e) {
+        console.error('Storage cleanup error:', e);
+    }
 }
 
 // Subjects
 async function loadSubjectsAdmin() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from(TABLE_SUBJECTS)
             .select('*, departments(id, name), exams(count)')
             .order('created_at', { ascending: true });
@@ -495,7 +517,7 @@ async function loadSubjectsAdmin() {
         filterSubjects();
     } catch (error) {
         console.error('Error loading subjects:', error);
-        showToast('حدث خطأ في تحميل المواد', 'error');
+        showToast('تعذّر تحميل المواد — ' + translateDbError(error), 'error');
     }
 }
 
@@ -652,14 +674,14 @@ async function handleSubjSubmit(e) {
     
     try {
         if (subjId) {
-            const { error } = await supabase
+            const { error } = await db
                 .from(TABLE_SUBJECTS)
                 .update({ name: subjName, department_id: departmentId, updated_at: new Date().toISOString() })
                 .eq('id', subjId);
             if (error) throw error;
             showToast('تم تحديث المادة بنجاح', 'success');
         } else {
-            const { error } = await supabase
+            const { error } = await db
                 .from(TABLE_SUBJECTS)
                 .insert([{ name: subjName, department_id: departmentId }]);
             if (error) throw error;
@@ -671,7 +693,7 @@ async function handleSubjSubmit(e) {
         updateStats();
     } catch (error) {
         console.error('Subj save error:', error);
-        showToast('حدث خطأ أثناء حفظ المادة', 'error');
+        showToast('تعذّر حفظ المادة — ' + translateDbError(error), 'error');
     } finally {
         saveBtn.disabled = false;
         saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ';
@@ -688,7 +710,14 @@ function editSubject(id) {
 function deleteSubject(id, name) {
     showDeleteModal(`هل أنت متأكد من حذف المادة "${name}"؟<br>سيتم حذف جميع الامتحانات المرتبطة بها. لا يمكن التراجع عن هذه العملية.`, async function() {
         try {
-            const { error } = await supabase
+            // Remove the PDF files of every exam inside this subject (best effort)
+            const { data: related } = await db
+                .from(TABLE_EXAMS)
+                .select('file_path')
+                .eq('subject_id', id);
+            await removeStorageFiles((related || []).map(e => e.file_path));
+
+            const { error } = await db
                 .from(TABLE_SUBJECTS)
                 .delete()
                 .eq('id', id);
@@ -697,7 +726,7 @@ function deleteSubject(id, name) {
             await loadAllData();
         } catch (error) {
             console.error('Delete subj error:', error);
-            showToast('حدث خطأ أثناء حذف المادة', 'error');
+            showToast('تعذّر حذف المادة — ' + translateDbError(error), 'error');
         }
     });
 }
@@ -705,7 +734,7 @@ function deleteSubject(id, name) {
 // Exams
 async function loadExamsAdmin() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from(TABLE_EXAMS)
             .select('*, subjects(id, name, departments(id, name))')
             .order('created_at', { ascending: false });
@@ -716,7 +745,7 @@ async function loadExamsAdmin() {
         filterExams();
     } catch (error) {
         console.error('Error loading exams:', error);
-        showToast('حدث خطأ في تحميل الامتحانات', 'error');
+        showToast('تعذّر تحميل الامتحانات — ' + translateDbError(error), 'error');
     }
 }
 
@@ -889,28 +918,31 @@ async function handleExamSubmit(e) {
     
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<div class="spinner" style="width: 16px; height: 16px; margin: 0 5px;"></div> جاري الحفظ...';
-    
+
+    let uploadedPath = null;
+
     try {
         let fileUrl = null;
         let filePath = null;
         
         // Upload file if provided
         if (examFile) {
-            const fileExt = examFile.name.split('.').pop();
-            const fileName = `exam_${Date.now()}.${fileExt}`;
-            filePath = `exams/${fileName}`;
+            const uniqueName = `exam_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.pdf`;
+            filePath = `exams/${uniqueName}`;
             
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            const { error: uploadError } = await db.storage
                 .from(STORAGE_BUCKET)
                 .upload(filePath, examFile, {
                     cacheControl: '3600',
-                    upsert: false
+                    upsert: false,
+                    contentType: 'application/pdf'
                 });
             
             if (uploadError) throw uploadError;
+            uploadedPath = filePath;
             
             // Get public URL
-            const { data: urlData } = supabase.storage
+            const { data: urlData } = db.storage
                 .from(STORAGE_BUCKET)
                 .getPublicUrl(filePath);
             
@@ -918,6 +950,7 @@ async function handleExamSubmit(e) {
         }
         
         if (examId) {
+            const previous = exams.find(x => x.id === examId);
             // Update - build update object
             const updateData = {
                 name: examName,
@@ -931,15 +964,20 @@ async function handleExamSubmit(e) {
                 updateData.file_url = fileUrl;
                 updateData.file_path = filePath;
             }
-            const { error } = await supabase
+            const { error } = await db
                 .from(TABLE_EXAMS)
                 .update(updateData)
                 .eq('id', examId);
             if (error) throw error;
+
+            // Remove the previous PDF after a successful replacement
+            if (fileUrl && previous && previous.file_path && previous.file_path !== filePath) {
+                await removeStorageFiles([previous.file_path]);
+            }
             showToast('تم تحديث الامتحان بنجاح', 'success');
         } else {
             // Insert
-            const { error } = await supabase
+            const { error } = await db
                 .from(TABLE_EXAMS)
                 .insert([{
                     name: examName,
@@ -957,8 +995,12 @@ async function handleExamSubmit(e) {
         await loadExamsAdmin();
         updateStats();
     } catch (error) {
+        // If the DB write failed, remove the file we just uploaded so nothing is orphaned
+        if (uploadedPath) {
+            await removeStorageFiles([uploadedPath]);
+        }
         console.error('Exam save error:', error);
-        showToast('حدث خطأ أثناء حفظ الامتحان: ' + error.message, 'error');
+        showToast('تعذّر حفظ الامتحان — ' + translateDbError(error), 'error');
     } finally {
         saveBtn.disabled = false;
         saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ';
@@ -977,11 +1019,11 @@ function deleteExam(id, name) {
         try {
             const exam = exams.find(e => e.id === id);
             if (exam && exam.file_path) {
-                await supabase.storage
+                await db.storage
                     .from(STORAGE_BUCKET)
                     .remove([exam.file_path]);
             }
-            const { error } = await supabase
+            const { error } = await db
                 .from(TABLE_EXAMS)
                 .delete()
                 .eq('id', id);
@@ -991,7 +1033,7 @@ function deleteExam(id, name) {
             updateStats();
         } catch (error) {
             console.error('Delete exam error:', error);
-            showToast('حدث خطأ أثناء حذف الامتحان', 'error');
+            showToast('تعذّر حذف الامتحان — ' + translateDbError(error), 'error');
         }
     });
 }

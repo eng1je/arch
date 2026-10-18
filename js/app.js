@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function initializeApp() {
-    if (!supabase) {
+    if (!db) {
         showToast('خطأ في إعدادات Supabase. يرجى التحقق من ملف config.js', 'error');
         return;
     }
@@ -111,7 +111,7 @@ async function loadDepartments() {
     if (empty) empty.style.display = 'none';
     
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from(TABLE_DEPARTMENTS)
             .select('id, name, created_at')
             .order('created_at', { ascending: true });
@@ -145,7 +145,7 @@ async function loadDepartments() {
         }
     } catch (error) {
         console.error('Error loading departments:', error);
-        showToast('حدث خطأ أثناء تحميل الأقسام', 'error');
+        showToast(translateDbError(error), 'error');
         if (loading) loading.style.display = 'none';
         if (empty) empty.style.display = 'block';
     }
@@ -170,7 +170,7 @@ async function loadSubjects(departmentId, departmentName) {
     if (empty) empty.style.display = 'none';
     
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from(TABLE_SUBJECTS)
             .select('id, name, created_at')
             .eq('department_id', departmentId)
@@ -205,7 +205,7 @@ async function loadSubjects(departmentId, departmentName) {
         }
     } catch (error) {
         console.error('Error loading subjects:', error);
-        showToast('حدث خطأ أثناء تحميل المواد', 'error');
+        showToast(translateDbError(error), 'error');
         if (loading) loading.style.display = 'none';
         if (empty) empty.style.display = 'block';
     }
@@ -229,7 +229,7 @@ async function loadExams(subjectId, subjectName, departmentName) {
     if (empty) empty.style.display = 'none';
     
     try {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from(TABLE_EXAMS)
             .select('*')
             .eq('subject_id', subjectId)
@@ -279,7 +279,7 @@ async function loadExams(subjectId, subjectName, departmentName) {
         }
     } catch (error) {
         console.error('Error loading exams:', error);
-        showToast('حدث خطأ أثناء تحميل الامتحانات', 'error');
+        showToast(translateDbError(error), 'error');
         if (loading) loading.style.display = 'none';
         if (empty) empty.style.display = 'block';
     }
@@ -330,7 +330,7 @@ async function handleGlobalSearch() {
         let results = [];
         
         // Search departments
-        const { data: depts } = await supabase
+        const { data: depts } = await db
             .from(TABLE_DEPARTMENTS)
             .select('id, name')
             .ilike('name', `%${query}%`);
@@ -346,7 +346,7 @@ async function handleGlobalSearch() {
         });
         
         // Search subjects
-        const { data: subjects } = await supabase
+        const { data: subjects } = await db
             .from(TABLE_SUBJECTS)
             .select('id, name, departments(id, name)')
             .ilike('name', `%${query}%`);
@@ -368,7 +368,7 @@ async function handleGlobalSearch() {
         if (/^\d{4}$/.test(query)) {
             examFilter += `,year.eq.${query}`;
         }
-        const { data: exams } = await supabase
+        const { data: exams } = await db
             .from(TABLE_EXAMS)
             .select('id, name, year, semester, subjects(id, name, departments(id, name))')
             .or(examFilter);
@@ -425,7 +425,7 @@ async function handleGlobalSearch() {
         
     } catch (error) {
         console.error('Search error:', error);
-        resultsDiv.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--danger-color);">حدث خطأ في البحث</div>';
+        resultsDiv.innerHTML = `<div style="padding: 1rem; text-align: center; color: var(--danger-color);">${escapeHtml(translateDbError(error))}</div>`;
     }
 }
 
