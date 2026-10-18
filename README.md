@@ -65,6 +65,7 @@
 ├─ images/
 │  ├─ logo.png                # شعار الكلية (خلفية شفافة)
 │  ├─ logo-128.png            # أيقونة الموقع (favicon)
+│  ├─ banner.png / .webp      # بانر الكلية (وليكن المستقبل)
 │  └─ timetables/             # صور الجداول الدراسية
 │     ├─ mining.png           # جدول قسم التعدين
 │     ├─ mining-thumb.webp    # صورة مصغّرة للبطاقة

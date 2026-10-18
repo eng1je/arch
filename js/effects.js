@@ -86,6 +86,7 @@
        ------------------------------------------------------------ */
     var REVEAL_SELECTORS = [
         '.section-title',
+        '.banner-frame',
         '#departmentsGrid .card',
         '#subjectsGrid .card',
         '#examsList .exam-item',

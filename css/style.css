@@ -1977,6 +1977,111 @@ body {
 }
 
 /* --------------------------------------------------------------------------
+   4.5) بانر الكلية (كلية الهندسة – ليبيا تبني المستقبل)
+   -------------------------------------------------------------------------- */
+.banner-section {
+    padding: 3rem 0 1rem;
+    background:
+        radial-gradient(900px 300px at 50% 0%, rgba(30, 60, 114, 0.07), transparent 72%),
+        linear-gradient(180deg, #ffffff 0%, #f4f7fc 100%);
+}
+
+/* الإطار الذهبي المتدفّق */
+.banner-frame {
+    position: relative;
+    margin: 0;
+    padding: 4px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, var(--gold-200), var(--gold-500) 26%, var(--navy-600) 52%, var(--gold-400) 78%, var(--gold-200));
+    background-size: 220% 220%;
+    animation: frameFlow 12s ease-in-out infinite;
+    box-shadow: 0 36px 74px -30px rgba(8, 18, 42, 0.6), 0 0 46px -18px rgba(245, 158, 11, 0.5);
+}
+
+@keyframes frameFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.banner-inner {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 24px;
+    cursor: pointer;
+    background: #08122a;
+    isolation: isolate;
+}
+
+.banner-inner img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 1.2s var(--ease-out);
+}
+
+.banner-inner:hover img,
+.banner-inner:focus-visible img {
+    transform: scale(1.035);
+}
+
+/* وميض ضوئي يمرّ على البانر */
+.banner-inner::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    width: 30%;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+    transform: translateX(-240%) skewX(-16deg);
+    transition: transform 1.2s var(--ease-out);
+}
+
+.banner-inner:hover::after,
+.banner-inner:focus-visible::after {
+    transform: translateX(470%) skewX(-16deg);
+}
+
+.banner-hint {
+    position: absolute;
+    inset-inline-end: 1.1rem;
+    bottom: 1.1rem;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.95rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #fff;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(8, 18, 42, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+}
+
+.banner-hint i {
+    color: var(--gold-400);
+}
+
+.banner-inner:hover .banner-hint,
+.banner-inner:focus-visible .banner-hint {
+    opacity: 1;
+    transform: none;
+}
+
+.banner-inner:focus-visible {
+    outline: 3px solid var(--gold-400);
+    outline-offset: 4px;
+}
+
+/* --------------------------------------------------------------------------
    5) عناوين الأقسام
    -------------------------------------------------------------------------- */
 .section-title {
@@ -2556,6 +2661,23 @@ body {
         grid-template-columns: 1fr;
     }
 
+    .banner-section {
+        padding: 2rem 0 0.5rem;
+    }
+
+    .banner-frame {
+        padding: 3px;
+        border-radius: 20px;
+    }
+
+    .banner-inner {
+        border-radius: 17px;
+    }
+
+    .banner-hint {
+        display: none;
+    }
+
     .section-title {
         font-size: 1.4rem;
     }
@@ -2600,6 +2722,12 @@ body {
         animation: none;
     }
 
+    .banner-frame {
+        animation: none;
+        background-size: 100% 100%;
+    }
+
+    .banner-inner::after,
     .btn::after,
     .hero-scroll span {
         display: none;
