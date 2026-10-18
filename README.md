@@ -186,7 +186,7 @@ const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
 
 ## 📞 التواصل
 
-- **واتساب:** [+218943769102](https://wa.me/218943769102)
+- **واتساب:** [اضغط للمراسلة](https://wa.me/218943769102)
 - **فيسبوك:** [الصفحة الرسمية](https://www.facebook.com/share/1DotxjdLmk/?mibextid=wwXIfr)
 
 ---
