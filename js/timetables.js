@@ -30,20 +30,6 @@
         }
     ];
 
-    /* صور إضافية تُعرض بالعارض فقط (بدون بطاقة في قسم الجداول) */
-    var EXTRA_IMAGES = [
-        {
-            id: 'banner',
-            title: 'كلية الهندسة – جامعة الجفرة',
-            meta: 'ليبيا تبني المستقبل',
-            image: 'images/banner.png',
-            download: 'كلية الهندسة - ليبيا تبني المستقبل.png',
-            alt: 'بانر كلية الهندسة – جامعة الجفرة: ليبيا تبني المستقبل'
-        }
-    ];
-
-    var ALL_ITEMS = TIMETABLES.concat(EXTRA_IMAGES);
-
     /* ---------- أدوات مساعدة ---------- */
     function esc(value) {
         return String(value == null ? '' : value)
@@ -56,29 +42,6 @@
 
     function downloadName(item) {
         return 'جدول ' + item.department + ' - ' + item.term + ' ' + item.year + '.png';
-    }
-
-    function itemTitle(item) {
-        return item.title || ('جدول ' + item.department);
-    }
-
-    function itemMeta(item) {
-        return item.meta || ('الجدول الدراسي · ' + item.term + ' ' + item.year);
-    }
-
-    function itemDownload(item) {
-        return item.download || downloadName(item);
-    }
-
-    function itemAlt(item) {
-        return item.alt || ('الجدول الدراسي ' + item.department + ' - ' + item.term + ' ' + item.year);
-    }
-
-    function findItem(id) {
-        for (var i = 0; i < ALL_ITEMS.length; i++) {
-            if (ALL_ITEMS[i].id === id) return ALL_ITEMS[i];
-        }
-        return null;
     }
 
     /* ---------- حالة العارض ---------- */
@@ -174,17 +137,20 @@
 
     /* ---------- فتح / إغلاق ---------- */
     function openViewer(id) {
-        var item = findItem(id);
+        var item = null;
+        for (var i = 0; i < TIMETABLES.length; i++) {
+            if (TIMETABLES[i].id === id) { item = TIMETABLES[i]; break; }
+        }
         var modal = document.getElementById('timetableViewer');
         var img = document.getElementById('tvImage');
         if (!item || !modal || !img) return;
 
-        document.getElementById('tvTitle').textContent = itemTitle(item);
-        document.getElementById('tvMeta').textContent = itemMeta(item);
+        document.getElementById('tvTitle').textContent = 'جدول ' + item.department;
+        document.getElementById('tvMeta').textContent = 'الجدول الدراسي · ' + item.term + ' ' + item.year;
 
         var dl = document.getElementById('tvDownload');
         dl.setAttribute('href', item.image);
-        dl.setAttribute('download', itemDownload(item));
+        dl.setAttribute('download', downloadName(item));
         document.getElementById('tvOpen').setAttribute('href', item.image);
 
         tv.naturalW = 0;
@@ -198,7 +164,7 @@
         }
 
         img.onload = ready;
-        img.alt = itemAlt(item);
+        img.alt = 'الجدول الدراسي ' + item.department + ' - ' + item.term + ' ' + item.year;
         img.src = item.image;
         if (img.complete && img.naturalWidth) ready();
 

@@ -2069,7 +2069,6 @@ body {
     display: block;
     overflow: hidden;
     border-radius: 24px;
-    cursor: pointer;
     background: #08122a;
     isolation: isolate;
 }
@@ -2081,8 +2080,7 @@ body {
     transition: transform 1.2s var(--ease-out);
 }
 
-.banner-inner:hover img,
-.banner-inner:focus-visible img {
+.banner-inner:hover img {
     transform: scale(1.035);
 }
 
@@ -2100,46 +2098,8 @@ body {
     transition: transform 1.2s var(--ease-out);
 }
 
-.banner-inner:hover::after,
-.banner-inner:focus-visible::after {
+.banner-inner:hover::after {
     transform: translateX(470%) skewX(-16deg);
-}
-
-.banner-hint {
-    position: absolute;
-    inset-inline-end: 1.1rem;
-    bottom: 1.1rem;
-    z-index: 3;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 0.95rem;
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #fff;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(8, 18, 42, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
-}
-
-.banner-hint i {
-    color: var(--gold-400);
-}
-
-.banner-inner:hover .banner-hint,
-.banner-inner:focus-visible .banner-hint {
-    opacity: 1;
-    transform: none;
-}
-
-.banner-inner:focus-visible {
-    outline: 3px solid var(--gold-400);
-    outline-offset: 4px;
 }
 
 /* --------------------------------------------------------------------------
@@ -2733,10 +2693,6 @@ body {
 
     .banner-inner {
         border-radius: 17px;
-    }
-
-    .banner-hint {
-        display: none;
     }
 
     .section-title {
