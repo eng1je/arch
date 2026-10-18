@@ -470,7 +470,8 @@
                 <div class="form-group">
                     <label for="examFile">ملف PDF <span class="required" id="fileRequired">*</span></label>
                     <input type="file" id="examFile" name="examFile" accept="application/pdf">
-                    <small class="form-help">يجب أن يكون الملف بصيغة PDF، وحجمه لا يزيد عن 10 ميجابايت</small>
+                    <small class="form-help" id="fileSizeHint">يجب أن يكون الملف بصيغة PDF، وحجمه لا يزيد عن 10 ميجابايت</small>
+                    <div id="fileInfo" class="file-info" style="display: none;"></div>
                     <div id="currentFile" class="current-file" style="display: none;"></div>
                 </div>
                 <div class="modal-footer">

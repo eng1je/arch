@@ -109,12 +109,14 @@ CREATE POLICY "Admin write exams" ON public.exams
 -- ------------------------------------------------------------
 -- 4) سلة تخزين ملفات PDF
 --    (أنشئ السلة من Storage > New bucket باسم exam-files واجعله Public)
+--    الحد الأقصى لحجم الملف: 50 ميجابايت (أقصى ما تسمح به الخطة المجانية)
+--    إن أردت تغييره، عدّل الرقم في السطور أدناه وفي js/config.js (MAX_FILE_SIZE_MB)
 -- ------------------------------------------------------------
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES ('exam-files', 'exam-files', true, 10485760, ARRAY['application/pdf'])
+VALUES ('exam-files', 'exam-files', true, 52428800, ARRAY['application/pdf'])
 ON CONFLICT (id) DO UPDATE
   SET public = true,
-      file_size_limit = 10485760,
+      file_size_limit = 52428800,
       allowed_mime_types = ARRAY['application/pdf'];
 
 -- سياسات التخزين: قراءة عامة + إدارة للمدير فقط

@@ -888,6 +888,12 @@ function showExamModal(mode, exam = null) {
         }
     }
     examFile.value = '';
+    const fileInfoReset = document.getElementById('fileInfo');
+    if (fileInfoReset) {
+        fileInfoReset.style.display = 'none';
+        fileInfoReset.innerHTML = '';
+        fileInfoReset.className = 'file-info';
+    }
     modal.style.display = 'flex';
     examName.focus();
 }
@@ -1432,6 +1438,32 @@ function setupAdminExtras() {
         sidebar.classList.remove('open');
         if (toggle) toggle.setAttribute('aria-expanded', 'false');
     });
+
+    // حجم ملف الامتحان: نص الحد + تحقّق فوري عند اختيار الملف
+    const sizeHint = document.getElementById('fileSizeHint');
+    if (sizeHint) {
+        sizeHint.textContent = 'يجب أن يكون الملف بصيغة PDF، وحجمه لا يزيد عن ' + MAX_FILE_SIZE_MB + ' ميجابايت';
+    }
+
+    const examFileInput = document.getElementById('examFile');
+    const fileInfo = document.getElementById('fileInfo');
+    if (examFileInput && fileInfo) {
+        examFileInput.addEventListener('change', function () {
+            const file = examFileInput.files && examFileInput.files[0];
+            if (!file) {
+                fileInfo.style.display = 'none';
+                fileInfo.innerHTML = '';
+                return;
+            }
+            const result = validatePDF(file);
+            fileInfo.style.display = 'flex';
+            fileInfo.className = 'file-info ' + (result.valid ? 'is-ok' : 'is-bad');
+            fileInfo.innerHTML = result.valid
+                ? `<i class="fas fa-circle-check"></i> ${escapeHtml(file.name)} — ${formatFileSize(file.size)}`
+                : `<i class="fas fa-circle-exclamation"></i> ${escapeHtml(result.error)}`;
+            if (!result.valid) showToast(result.error, 'error');
+        });
+    }
 
     renderActivityTable();
     renderBackupSummary();

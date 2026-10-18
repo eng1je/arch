@@ -59,19 +59,28 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+// ===== الحد الأقصى لحجم ملف الامتحان =====
+// ملاحظة مهمة: يجب أن يكون هذا الرقم مطابقاً لحدّ سلة التخزين في Supabase
+// (Storage > exam-files > File size limit) وإلا سيرفض الخادم الملف.
+// الأقصى المسموح به في خطة Supabase المجانية هو 50 ميجابايت.
+const MAX_FILE_SIZE_MB = 50;
+const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+
 // Validate PDF file
 function validatePDF(file) {
     if (!file) return { valid: false, error: 'لم يتم اختيار ملف' };
-    
-    const maxSize = 10 * 1024 * 1024; // 10 MB
-    if (file.size > maxSize) {
-        return { valid: false, error: 'حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت' };
-    }
-    
+
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
         return { valid: false, error: 'يجب أن يكون الملف بصيغة PDF فقط' };
     }
-    
+
+    if (file.size > MAX_FILE_SIZE) {
+        return {
+            valid: false,
+            error: `حجم الملف كبير جداً (${formatFileSize(file.size)}). الحد الأقصى ${MAX_FILE_SIZE_MB} ميجابايت`
+        };
+    }
+
     return { valid: true };
 }
 
@@ -139,8 +148,8 @@ function translateDbError(error) {
     if (lower.includes('row-level security') || code === '42501') {
         return 'غير مصرح لك بهذه العملية. تأكد من تسجيل دخول المدير';
     }
-    if (lower.includes('payload too large') || lower.includes('exceeded the maximum')) {
-        return 'حجم الملف كبير جداً';
+    if (lower.includes('payload too large') || lower.includes('exceeded the maximum') || lower.includes('entity too large')) {
+        return `حجم الملف يتجاوز الحد المسموح في التخزين (${MAX_FILE_SIZE_MB} ميجابايت)`;
     }
     if (lower.includes('mime type') || lower.includes('invalid mime')) {
         return 'نوع الملف غير مسموح. يجب أن يكون PDF';

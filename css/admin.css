@@ -1898,6 +1898,32 @@ body {
     outline-offset: 3px;
 }
 
+/* ------------------------------ معلومات ملف الامتحان المختار ------------------------------ */
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 11px;
+    border: 1px solid transparent;
+    word-break: break-word;
+}
+
+.file-info.is-ok {
+    color: #047857;
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.32);
+}
+
+.file-info.is-bad {
+    color: #b91c1c;
+    background: rgba(239, 68, 68, 0.09);
+    border-color: rgba(239, 68, 68, 0.32);
+}
+
 .backup-icon {
     display: grid;
     place-items: center;
