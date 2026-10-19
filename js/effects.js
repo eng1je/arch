@@ -90,8 +90,7 @@
         '#departmentsGrid .card',
         '#subjectsGrid .card',
         '#examsList .exam-item',
-        '#timetablesGrid .timetable-card',
-        '.contact-card'
+        '#timetablesGrid .timetable-card'
     ];
 
     var WATCHED_CONTAINERS = [
@@ -160,9 +159,6 @@
                 var container = document.getElementById(id);
                 if (container) mutations.observe(container, { childList: true });
             });
-
-            var contactGrid = document.querySelector('.contact-cards');
-            if (contactGrid) mutations.observe(contactGrid, { childList: true });
         }
     }
 
