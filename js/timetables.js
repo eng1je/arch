@@ -9,6 +9,30 @@
 (function () {
     'use strict';
 
+    /* ---------- الجداول المكتوبة كنص (تُعرض كجدول حقيقي في الموقع) ----------
+       slots: أوقات المحاضرات بالترتيب (تُكتب أيضاً كعنوان لكل عمود)
+       days : الأيام، وفي كل يوم مصفوفة مواد بنفس ترتيب slots — اترك '' للفراغ
+       ------------------------------------------------------------------------ */
+    var SCHEDULES = [
+        {
+            id: 'civil-general',
+            department: 'الهندسة المدنية',
+            term: 'فصل الخريف',
+            year: '2026 – 2027',
+            isNew: true,
+            slots: ['9 – 11', '11 – 1', '1 – 3'],
+            days: [
+                { name: 'السبت', courses: ['', 'أسس هندسة كهربائية', 'ميكانيكا هندسية 2'] },
+                { name: 'الأحد', courses: ['معمل فيزياء 2', 'رياضيات 3', ''] },
+                { name: 'الاثنين', courses: ['رياضيات 3', '', 'أسس هندسة كهربائية'] },
+                { name: 'الثلاثاء', courses: ['رسم هندسي 2', 'مواد بناء 1', ''] },
+                { name: 'الأربعاء', courses: ['لغة إنجليزية 3', 'ميكانيكا هندسية 2', 'اللغة العربية والدراسات الإسلامية 2'] },
+                { name: 'الخميس', courses: ['رسم هندسي 2', 'مواد بناء 1', ''] }
+            ],
+            note: 'جدول مبدئي — يُعتمد الجدول الرسمي عند وجود أي اختلاف.'
+        }
+    ];
+
     var TIMETABLES = [
         {
             id: 'mining',
@@ -26,9 +50,12 @@
             year: '2026 – 2027',
             image: 'images/timetables/civil-general.png',
             thumb: 'images/timetables/civil-general-thumb.webp',
-            isNew: true
+            isNew: true,
+            native: true   /* يُعرض كجدول نصي، ويُبقى هنا ليُفتح كصورة رسمية */
         }
     ];
+
+    var WEEKDAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
     /* ---------- أدوات مساعدة ---------- */
     function esc(value) {
@@ -58,13 +85,81 @@
     var MIN_ZOOM = 0.4;
     var MAX_ZOOM = 6;
 
+    /* ---------- بناء الجدول النصي ---------- */
+    function renderSchedule(s) {
+        var today = WEEKDAYS[new Date().getDay()];
+
+        var head = s.slots.map(function (slot) {
+            return '<th scope="col" class="tt-slot" dir="ltr">' + esc(slot) + '</th>';
+        }).join('');
+
+        var body = s.days.map(function (day) {
+            var cells = s.slots.map(function (slot, j) {
+                var course = day.courses[j] || '';
+                if (!course) {
+                    return '<td class="is-empty" data-slot="' + esc(slot) + '"><span class="tt-empty">—</span></td>';
+                }
+                return '<td data-slot="' + esc(slot) + '"><span class="tt-course">' +
+                    '<i class="fas fa-book-open" aria-hidden="true"></i>' +
+                    '<span>' + esc(course) + '</span>' +
+                    '</span></td>';
+            }).join('');
+
+            var cls = 'tt-row' + (day.name === today ? ' is-today' : '');
+
+            return '<tr class="' + cls + '">' +
+                '<th scope="row">' + esc(day.name) +
+                (day.name === today ? '<span class="tt-today-chip">اليوم</span>' : '') +
+                '</th>' + cells + '</tr>';
+        }).join('');
+
+        return '' +
+            '<article class="tt-sheet">' +
+                '<header class="tt-sheet-head">' +
+                    '<div class="tt-sheet-titles">' +
+                        '<h3><i class="fas fa-table-list"></i> ' + esc(s.department) + '</h3>' +
+                        '<p class="tt-sheet-meta">' +
+                            '<i class="fas fa-calendar-days"></i> ' + esc(s.term + ' ' + s.year) +
+                        '</p>' +
+                    '</div>' +
+                    (s.isNew ? '<span class="timetable-badge">جديد</span>' : '') +
+                '</header>' +
+                '<div class="tt-scroll">' +
+                    '<table class="tt-table">' +
+                        '<caption class="tt-caption">جدول ' + esc(s.department) + ' — ' + esc(s.term + ' ' + s.year) + '</caption>' +
+                        '<thead><tr><th scope="col" class="tt-col-day">اليوم</th>' + head + '</tr></thead>' +
+                        '<tbody>' + body + '</tbody>' +
+                    '</table>' +
+                '</div>' +
+                '<footer class="tt-sheet-foot">' +
+                    (s.note ? '<p class="tt-note"><i class="fas fa-circle-info"></i> ' + esc(s.note) + '</p>' : '<span></span>') +
+                    '<div class="tt-sheet-actions">' +
+                        '<a class="btn btn-secondary" href="' + esc(imageOf(s.id)) + '" download="' + esc(downloadName(s)) + '">' +
+                            '<i class="fas fa-download"></i> تحميل الصورة' +
+                        '</a>' +
+                        '<button type="button" class="btn btn-primary" data-tt="' + esc(s.id) + '">' +
+                            '<i class="fas fa-image"></i> الصورة الرسمية' +
+                        '</button>' +
+                    '</div>' +
+                '</footer>' +
+            '</article>';
+    }
+
+    function imageOf(id) {
+        for (var i = 0; i < TIMETABLES.length; i++) {
+            if (TIMETABLES[i].id === id) return TIMETABLES[i].image;
+        }
+        return '';
+    }
+
     /* ---------- بناء البطاقات ---------- */
     function renderTimetables() {
         var section = document.getElementById('timetablesSection');
         var grid = document.getElementById('timetablesGrid');
-        if (!section || !grid || !TIMETABLES.length) return;
+        if (!section || !grid) return;
+        if (!TIMETABLES.length && !SCHEDULES.length) return;
 
-        grid.innerHTML = TIMETABLES.map(function (item) {
+        var cards = TIMETABLES.filter(function (item) { return !item.native; }).map(function (item) {
             var alt = 'الجدول الدراسي ' + item.department + ' - ' + item.term + ' ' + item.year;
             return '' +
                 '<article class="timetable-card">' +
@@ -90,6 +185,8 @@
                     '</div>' +
                 '</article>';
         }).join('');
+
+        grid.innerHTML = SCHEDULES.map(renderSchedule).join('') + cards;
 
         section.style.display = 'block';
     }

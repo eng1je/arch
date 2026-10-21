@@ -3141,3 +3141,300 @@ body {
         font-size: 1.15rem;
     }
 }
+/* ==========================================================================
+   ✦✦✦  الجدول الدراسي النصي — بديل الصورة (كمبيوتر + هاتف)
+   ========================================================================== */
+
+.tt-sheet {
+    grid-column: 1 / -1;
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 22px;
+    box-shadow: var(--elev-2);
+    overflow: hidden;
+}
+
+.tt-sheet::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold-600), var(--gold-400), var(--gold-600));
+}
+
+.tt-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 1.35rem 1rem;
+    background:
+        radial-gradient(120% 140% at 100% 0%, rgba(30, 60, 114, 0.07), transparent 60%),
+        linear-gradient(180deg, #fbfcff, #ffffff);
+    border-bottom: 1px solid var(--hairline);
+}
+
+.tt-sheet-titles h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0;
+    font-size: 1.12rem;
+    font-weight: 800;
+    color: var(--navy-700);
+}
+
+.tt-sheet-titles h3 i { color: var(--gold-600); }
+
+.tt-sheet-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.3rem 0 0;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.tt-scroll { overflow-x: auto; }
+
+.tt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.94rem;
+}
+
+.tt-caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.tt-table thead th {
+    padding: 0.7rem 0.65rem;
+    background: #f4f7fc;
+    border-bottom: 1px solid var(--hairline);
+    color: var(--navy-700);
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.tt-slot {
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+.tt-table thead th.tt-col-day {
+    padding-inline-start: 1.35rem;
+    text-align: right;
+}
+
+.tt-table tbody th {
+    position: relative;
+    width: 96px;
+    padding: 0.9rem 0.75rem 0.9rem 1.35rem;
+    border-bottom: 1px solid var(--hairline);
+    color: var(--navy-700);
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.tt-table td {
+    padding: 0.85rem 0.7rem;
+    border-bottom: 1px solid var(--hairline);
+    border-inline-start: 1px solid var(--hairline);
+    color: #24324a;
+    line-height: 1.55;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.tt-table tbody tr:last-child th,
+.tt-table tbody tr:last-child td { border-bottom: 0; }
+
+.tt-course {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: right;
+}
+
+.tt-course i {
+    flex-shrink: 0;
+    margin-top: 0.28rem;
+    font-size: 0.72rem;
+    color: var(--gold-600);
+}
+
+.tt-empty { color: var(--text-light); opacity: 0.5; }
+
+.tt-row:hover td { background: rgba(42, 82, 152, 0.045); }
+
+.tt-row.is-today th,
+.tt-row.is-today td {
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.045));
+}
+
+.tt-row.is-today th { color: var(--gold-700); }
+
+.tt-today-chip {
+    display: inline-block;
+    margin-inline-start: 0.4rem;
+    padding: 0.12rem 0.4rem;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--gold-500), var(--gold-600));
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 800;
+    vertical-align: middle;
+}
+
+.tt-sheet-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.35rem 1.1rem;
+    border-top: 1px solid var(--hairline);
+    background: #fbfcff;
+}
+
+.tt-note {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+}
+
+.tt-note i { color: var(--gold-600); }
+
+.tt-sheet-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.tt-sheet-actions .btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.86rem;
+}
+
+/* ---------------- الهاتف: كل يوم بطاقة مستقلة ---------------- */
+@media (max-width: 768px) {
+    .tt-sheet { border-radius: 18px; }
+
+    .tt-sheet-head { padding: 0.95rem 1rem 0.85rem; }
+    .tt-sheet-titles h3 { font-size: 1.02rem; }
+    .tt-sheet-meta { font-size: 0.76rem; }
+
+    .tt-scroll { overflow: visible; }
+
+    .tt-table,
+    .tt-table tbody,
+    .tt-table tr,
+    .tt-table th,
+    .tt-table td {
+        display: block;
+        width: auto;
+    }
+
+    .tt-table thead { display: none; }
+
+    .tt-table {
+        padding: 0.75rem 0.75rem 0.15rem;
+        background: #f7f9fd;
+        font-size: 0.92rem;
+    }
+
+    .tt-table tbody tr {
+        margin-bottom: 0.7rem;
+        padding: 0.2rem 0.9rem 0.35rem;
+        border: 1px solid var(--hairline);
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: var(--elev-1);
+    }
+
+    .tt-table tbody th {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: auto;
+        padding: 0.65rem 0 0.5rem;
+        border: 0;
+        font-size: 1rem;
+    }
+
+    .tt-table tbody th::before {
+        content: '';
+        flex-shrink: 0;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--gold-500);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.16);
+    }
+
+    .tt-table td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.7rem;
+        padding: 0.6rem 0;
+        border: 0;
+        border-top: 1px dashed rgba(15, 23, 42, 0.1);
+        text-align: right;
+        font-size: 0.92rem;
+    }
+
+    .tt-table td::before {
+        content: attr(data-slot);
+        order: -1;
+        flex-shrink: 0;
+        padding: 0.18rem 0.45rem;
+        border-radius: 7px;
+        background: #eef3fb;
+        color: var(--navy-700);
+        font-size: 0.7rem;
+        font-weight: 800;
+        white-space: nowrap;
+        direction: ltr;
+        unicode-bidi: isolate;
+    }
+
+    .tt-table td.is-empty { display: none; }
+
+    .tt-course { font-size: 0.9rem; }
+
+    .tt-row.is-today th,
+    .tt-row.is-today td { background: transparent; }
+
+    .tt-table tbody tr.is-today {
+        border-color: var(--hairline-gold);
+        background: linear-gradient(180deg, rgba(245, 158, 11, 0.07), #ffffff 60%);
+    }
+
+    .tt-sheet-foot { padding: 0.85rem 1rem 1rem; }
+
+    .tt-sheet-actions { width: 100%; }
+
+    .tt-sheet-actions .btn {
+        flex: 1 1 auto;
+        justify-content: center;
+        min-height: 46px;
+    }
+
+    .tt-note { font-size: 0.74rem; }
+}
