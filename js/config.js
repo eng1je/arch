@@ -17,6 +17,7 @@ window.db = db;
 const TABLE_DEPARTMENTS = 'departments';
 const TABLE_SUBJECTS = 'subjects';
 const TABLE_EXAMS = 'exams';
+const TABLE_MATERIALS = 'materials';
 const STORAGE_BUCKET = 'exam-files';
 
 // Toast utility

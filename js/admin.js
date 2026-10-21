@@ -38,6 +38,9 @@ tabs.forEach(tab => {
             case 'exams':
                 pageTitle.textContent = 'إدارة الامتحانات';
                 break;
+            case 'materials':
+                pageTitle.textContent = 'إدارة المنهج والشيتات';
+                break;
             case 'activity':
                 pageTitle.textContent = 'سجل النشاط';
                 break;
@@ -53,6 +56,7 @@ tabs.forEach(tab => {
         if (sidebarToggle) sidebarToggle.setAttribute('aria-expanded', 'false');
 
         if (tabName === 'activity') renderActivityTable();
+        if (tabName === 'materials') loadMaterialsAdmin();
         if (tabName === 'backup') renderBackupSummary();
     });
 });
@@ -1467,4 +1471,197 @@ function setupAdminExtras() {
 
     renderActivityTable();
     renderBackupSummary();
+
+    const materialForm = document.getElementById('materialForm');
+    if (materialForm) materialForm.addEventListener('submit', handleMaterialSubmit);
+}
+
+/* ============================================================
+   المنهج والشيتات
+   ============================================================ */
+let materials = [];
+
+const MATERIAL_KIND_LABELS = { syllabus: 'منهج', sheet: 'شيت', other: 'ملف' };
+
+async function loadMaterialsAdmin() {
+    const tbody = document.getElementById('materialsTableBody');
+    if (!tbody) return;
+
+    try {
+        const { data, error } = await db
+            .from(TABLE_MATERIALS)
+            .select('*, subjects(id, name, department_id, departments(id, name))')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        materials = data || [];
+        renderMaterialsTable();
+        populateMaterialSubjects();
+    } catch (error) {
+        console.error('Error loading materials:', error);
+        materials = [];
+        renderMaterialsTable();
+        showToast('تعذّر تحميل المنهج والشيتات — تأكد من تشغيل ملف supabase/materials.sql أولاً', 'error');
+    }
+}
+
+function renderMaterialsTable() {
+    const tbody = document.getElementById('materialsTableBody');
+    const empty = document.getElementById('materialsTableEmpty');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (materials.length === 0) {
+        if (empty) empty.style.display = 'block';
+        return;
+    }
+
+    if (empty) empty.style.display = 'none';
+
+    materials.forEach((item, index) => {
+        const subject = item.subjects || {};
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td><strong>${escapeHtml(item.title)}</strong></td>
+            <td>${MATERIAL_KIND_LABELS[item.kind] || 'ملف'}</td>
+            <td>${escapeHtml(subject.name || '-')}</td>
+            <td>${escapeHtml(subject.departments?.name || '-')}</td>
+            <td>${formatDate(item.created_at)}</td>
+            <td>
+                <div class="table-actions">
+                    ${item.file_url ? `<button class="btn btn-sm btn-info" onclick="previewPDF('${escapeJs(item.file_url)}', '${escapeJs(item.title)}')">
+                        <i class="fas fa-eye"></i> معاينة
+                    </button>` : ''}
+                    <button class="btn btn-sm btn-delete" onclick="deleteMaterial('${item.id}')">
+                        <i class="fas fa-trash"></i> حذف
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function populateMaterialSubjects() {
+    const select = document.getElementById('materialSubj');
+    if (!select) return;
+
+    const current = select.value;
+    select.innerHTML = '<option value="">اختر المادة</option>';
+
+    subjects.forEach(function (subj) {
+        const option = document.createElement('option');
+        option.value = subj.id;
+        option.textContent = subj.departments?.name
+            ? `${subj.name} — ${subj.departments.name}`
+            : subj.name;
+        select.appendChild(option);
+    });
+
+    if (current && select.querySelector(`option[value="${current}"]`)) {
+        select.value = current;
+    }
+}
+
+async function handleMaterialSubmit(e) {
+    e.preventDefault();
+
+    const subjectId = document.getElementById('materialSubj').value;
+    const kind = document.getElementById('materialKind').value;
+    const title = document.getElementById('materialTitle').value.trim();
+    const fileInput = document.getElementById('materialFile');
+    const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+    const saveBtn = document.getElementById('materialSaveBtn');
+
+    if (!subjectId) { showToast('يرجى اختيار المادة', 'warning'); return; }
+    if (!title) { showToast('يرجى كتابة العنوان', 'warning'); return; }
+
+    if (file) {
+        const validation = validatePDF(file);
+        if (!validation.valid) { showToast(validation.error, 'error'); return; }
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<div class="spinner" style="width: 16px; height: 16px; margin: 0 5px;"></div> جاري الإضافة...';
+
+    let uploadedPath = null;
+
+    try {
+        let fileUrl = null;
+        let fileName = null;
+
+        if (file) {
+            const uniqueName = `material_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.pdf`;
+            uploadedPath = `materials/${uniqueName}`;
+
+            const { error: uploadError } = await db.storage
+                .from(STORAGE_BUCKET)
+                .upload(uploadedPath, file, {
+                    cacheControl: '3600',
+                    upsert: false,
+                    contentType: 'application/pdf'
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = db.storage.from(STORAGE_BUCKET).getPublicUrl(uploadedPath);
+            fileUrl = urlData.publicUrl;
+            fileName = file.name;
+        }
+
+        const { error } = await db.from(TABLE_MATERIALS).insert([{
+            subject_id: subjectId,
+            kind: kind,
+            title: title,
+            file_url: fileUrl,
+            file_path: uploadedPath,
+            file_name: fileName
+        }]);
+
+        if (error) throw error;
+
+        showToast('تمت الإضافة بنجاح', 'success');
+        logActivity('إضافة', MATERIAL_KIND_LABELS[kind] || 'ملف', title);
+
+        e.target.reset();
+        await loadMaterialsAdmin();
+    } catch (error) {
+        if (uploadedPath) {
+            try { await db.storage.from(STORAGE_BUCKET).remove([uploadedPath]); } catch (err) { /* لا شيء */ }
+        }
+        console.error('Material insert error:', error);
+        showToast('تعذّرت الإضافة — ' + translateDbError(error), 'error');
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-plus"></i> إضافة';
+    }
+}
+
+function deleteMaterial(id) {
+    const item = materials.find(m => m.id === id);
+    if (!item) return;
+
+    showDeleteModal(
+        `هل أنت متأكد من حذف "${escapeHtml(item.title)}"؟` +
+        (item.file_path ? '<br>سيتم حذف الملف المرفوع أيضاً.' : '') +
+        ' لا يمكن التراجع عن هذه العملية.',
+        async function () {
+            try {
+                if (item.file_path) {
+                    await db.storage.from(STORAGE_BUCKET).remove([item.file_path]);
+                }
+                const { error } = await db.from(TABLE_MATERIALS).delete().eq('id', id);
+                if (error) throw error;
+
+                showToast('تم الحذف بنجاح', 'success');
+                logActivity('حذف', 'منهج/شيت', item.title);
+                await loadMaterialsAdmin();
+            } catch (error) {
+                console.error('Delete material error:', error);
+                showToast('تعذّر الحذف — ' + translateDbError(error), 'error');
+            }
+        }
+    );
 }

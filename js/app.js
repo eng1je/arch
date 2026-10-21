@@ -283,6 +283,72 @@ async function loadExams(subjectId, subjectName, departmentName) {
         if (loading) loading.style.display = 'none';
         if (empty) empty.style.display = 'block';
     }
+
+    await loadMaterials(subjectId);
+}
+
+// ============================================================
+//  المنهج والشيتات
+// ============================================================
+const MATERIAL_KINDS = {
+    syllabus: { label: 'منهج', icon: 'fa-book' },
+    sheet: { label: 'شيت', icon: 'fa-file-lines' },
+    other: { label: 'ملف', icon: 'fa-paperclip' }
+};
+
+async function loadMaterials(subjectId) {
+    const block = document.getElementById('materialsBlock');
+    const list = document.getElementById('materialsList');
+    const empty = document.getElementById('materialsEmpty');
+    if (!block) return;
+
+    block.style.display = 'none';
+    if (list) list.innerHTML = '';
+
+    try {
+        const { data, error } = await db
+            .from(TABLE_MATERIALS)
+            .select('*')
+            .eq('subject_id', subjectId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            block.style.display = 'block';
+            if (empty) empty.style.display = 'flex';
+            return;
+        }
+
+        if (empty) empty.style.display = 'none';
+
+        if (list) {
+            list.innerHTML = data.map(function (item) {
+                const kind = MATERIAL_KINDS[item.kind] || MATERIAL_KINDS.other;
+                const actions = item.file_url
+                    ? '<div class="material-actions">' +
+                        '<button type="button" class="btn btn-info" onclick="previewPDF(\'' + escapeJs(item.file_url) + '\', \'' + escapeJs(item.title) + '\')">' +
+                            '<i class="fas fa-eye"></i> معاينة' +
+                        '</button>' +
+                        '<a href="' + escapeHtml(item.file_url) + '" target="_blank" rel="noopener" download class="btn btn-primary">' +
+                            '<i class="fas fa-download"></i> تحميل' +
+                        '</a>' +
+                      '</div>'
+                    : '';
+
+                return '<article class="material-item material-item--' + escapeHtml(item.kind) + '">' +
+                    '<span class="material-kind"><i class="fas ' + kind.icon + '"></i> ' + kind.label + '</span>' +
+                    '<h4 class="material-name">' + escapeHtml(item.title) + '</h4>' +
+                    actions +
+                '</article>';
+            }).join('');
+        }
+
+        block.style.display = 'block';
+    } catch (error) {
+        // الجدول غير منشأ بعد — يبقى القسم مخفياً بهدوء
+        block.style.display = 'none';
+    }
 }
 
 // Preview PDF

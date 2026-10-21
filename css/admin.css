@@ -2047,3 +2047,67 @@ body {
         width: 285px;
     }
 }
+
+/* ==========================================================================
+   ✦ نموذج إضافة المنهج / الشيتات
+   ========================================================================== */
+.material-form {
+    margin-bottom: 1.5rem;
+    padding: 1.1rem 1.2rem 1.25rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 4px 14px -8px rgba(11, 24, 48, 0.22);
+}
+
+.material-form .form-group { margin-bottom: 0.9rem; }
+
+.material-form .form-group label {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: #24324a;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.material-form .form-group input[type="text"],
+.material-form .form-group select,
+.material-form .form-group input[type="file"] {
+    width: 100%;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid #dbe3ee;
+    border-radius: 10px;
+    background: #fbfcff;
+    color: #1e293b;
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.material-form .form-group input[type="text"]:focus,
+.material-form .form-group select:focus {
+    border-color: #f59e0b;
+    background: #fff;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+}
+
+.material-form .form-hint {
+    display: block;
+    margin-top: 0.35rem;
+    color: #64748b;
+    font-size: 0.76rem;
+}
+
+.material-form .req { color: #ef4444; }
+
+.material-form-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+    .material-form { padding: 0.95rem 0.95rem 1.05rem; }
+    .material-form-actions .btn { width: 100%; justify-content: center; min-height: 46px; }
+    .material-form .form-group input,
+    .material-form .form-group select { font-size: 16px; }
+}
