@@ -113,8 +113,7 @@
         }).join('');
 
         return '' +
-            '<article class="tt-sheet" data-sheet="' + esc(s.id) + '" role="button" tabindex="0"' +
-                ' aria-label="عرض جدول ' + esc(s.department) + ' بالحجم الكامل">' +
+            '<article class="tt-sheet">' +
                 '<header class="tt-sheet-head">' +
                     '<div class="tt-sheet-titles">' +
                         '<h3><i class="fas fa-table-list"></i> ' + esc(s.department) + '</h3>' +
@@ -124,9 +123,10 @@
                     '</div>' +
                     '<div class="tt-head-side">' +
                         (s.isNew ? '<span class="timetable-badge">جديد</span>' : '') +
-                        '<span class="tt-open-hint">' +
+                        '<button type="button" class="tt-open-hint" data-sheet="' + esc(s.id) + '"' +
+                            ' aria-label="عرض جدول ' + esc(s.department) + ' في نافذة كاملة">' +
                             '<i class="fas fa-expand" aria-hidden="true"></i> عرض الجدول' +
-                        '</span>' +
+                        '</button>' +
                     '</div>' +
                 '</header>' +
                 '<div class="tt-scroll">' +
@@ -394,12 +394,15 @@
     /* ---------- عرض الجدول النصي مكبّراً (نافذة كاملة) ---------- */
     var sheetReturnFocus = null;
 
-    function openSheet(id) {
+    function openSheet(id, triggerEl) {
         var modal = document.getElementById('sheetModal');
         var body = document.getElementById('sheetModalBody');
         var title = document.getElementById('sheetModalTitle');
         var meta = document.getElementById('sheetModalMeta');
-        var source = document.querySelector('.tt-sheet[data-sheet="' + id + '"] .tt-table');
+
+        var sheetEl = triggerEl && triggerEl.closest ? triggerEl.closest('.tt-sheet') : null;
+        var source = sheetEl ? sheetEl.querySelector('.tt-table')
+            : document.querySelector('.tt-sheet[data-sheet="' + id + '"] .tt-table');
         if (!modal || !body || !source) return;
 
         var schedule = null;
@@ -461,7 +464,7 @@
 
         document.addEventListener('click', function (e) {
             var trigger = e.target.closest ? e.target.closest('[data-sheet]') : null;
-            if (trigger) openSheet(trigger.getAttribute('data-sheet'));
+            if (trigger) openSheet(trigger.getAttribute('data-sheet'), trigger);
         });
 
         document.addEventListener('keydown', function (e) {
@@ -473,7 +476,7 @@
             if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return;
 
             e.preventDefault();
-            openSheet(el.getAttribute('data-sheet'));
+            openSheet(el.getAttribute('data-sheet'), el);
         });
     }
 
