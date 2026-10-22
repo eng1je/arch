@@ -28,8 +28,7 @@
                 { name: 'الثلاثاء', courses: ['رسم هندسي 2', 'مواد بناء 1', ''] },
                 { name: 'الأربعاء', courses: ['لغة إنجليزية 3', 'ميكانيكا هندسية 2', 'اللغة العربية والدراسات الإسلامية 2'] },
                 { name: 'الخميس', courses: ['رسم هندسي 2', 'مواد بناء 1', ''] }
-            ],
-            note: 'جدول مبدئي — يُعتمد الجدول الرسمي عند وجود أي اختلاف.'
+            ]
         }
     ];
 
@@ -114,7 +113,8 @@
         }).join('');
 
         return '' +
-            '<article class="tt-sheet">' +
+            '<article class="tt-sheet" data-tt="' + esc(s.id) + '" role="button" tabindex="0"' +
+                ' aria-label="عرض جدول ' + esc(s.department) + ' بالحجم الكامل">' +
                 '<header class="tt-sheet-head">' +
                     '<div class="tt-sheet-titles">' +
                         '<h3><i class="fas fa-table-list"></i> ' + esc(s.department) + '</h3>' +
@@ -122,7 +122,12 @@
                             '<i class="fas fa-calendar-days"></i> ' + esc(s.term + ' ' + s.year) +
                         '</p>' +
                     '</div>' +
-                    (s.isNew ? '<span class="timetable-badge">جديد</span>' : '') +
+                    '<div class="tt-head-side">' +
+                        (s.isNew ? '<span class="timetable-badge">جديد</span>' : '') +
+                        '<span class="tt-open-hint">' +
+                            '<i class="fas fa-expand" aria-hidden="true"></i> عرض الجدول' +
+                        '</span>' +
+                    '</div>' +
                 '</header>' +
                 '<div class="tt-scroll">' +
                     '<table class="tt-table">' +
@@ -131,17 +136,6 @@
                         '<tbody>' + body + '</tbody>' +
                     '</table>' +
                 '</div>' +
-                '<footer class="tt-sheet-foot">' +
-                    (s.note ? '<p class="tt-note"><i class="fas fa-circle-info"></i> ' + esc(s.note) + '</p>' : '<span></span>') +
-                    '<div class="tt-sheet-actions">' +
-                        '<a class="btn btn-secondary" href="' + esc(imageOf(s.id)) + '" download="' + esc(downloadName(s)) + '">' +
-                            '<i class="fas fa-download"></i> تحميل الصورة' +
-                        '</a>' +
-                        '<button type="button" class="btn btn-primary" data-tt="' + esc(s.id) + '">' +
-                            '<i class="fas fa-image"></i> الصورة الرسمية' +
-                        '</button>' +
-                    '</div>' +
-                '</footer>' +
             '</article>';
     }
 

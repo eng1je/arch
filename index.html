@@ -49,11 +49,14 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="hero">
-        <!-- Animated mathematical symbols -->
+    <section class="hero" id="heroSection">
+        <!-- خلفية هندسية: رموز رياضية + حلقات + شبكة مخططات -->
         <div class="hero-shapes" aria-hidden="true">
             <span class="shape-orb shape-orb--gold"></span>
             <span class="shape-orb shape-orb--blue"></span>
+
+            <span class="hero-ring hero-ring--a"></span>
+            <span class="hero-ring hero-ring--b"></span>
 
             <!-- left band -->
             <span class="math-symbol" style="--x:4%; --y:15%; --s:3.4rem; --o:.32; --t:12s; --d:0s">&#960;</span>
@@ -77,27 +80,82 @@
             <span class="math-formula math-formula--top">E = mc&#178;</span>
             <span class="math-formula math-formula--bottom">&#8721; 1/n&#178; = &#960;&#178;/6</span>
         </div>
-        <div class="hero-content">
-            <div class="hero-emblem" aria-hidden="true">
-                <i class="fas fa-compass-drafting"></i>
-            </div>
-            <h2>أرشيف امتحانات كلية الهندسة</h2>
-        </div>
-    </section>
 
-    <!-- College Banner -->
-    <section class="banner-section" id="bannerSection">
-        <div class="container">
-            <figure class="banner-frame">
-                <div class="banner-inner">
-                    <picture>
-                        <source srcset="images/banner.webp" type="image/webp">
-                        <img src="images/banner.png"
-                             alt="كلية الهندسة – جامعة الجفرة: ليبيا تبني المستقبل"
-                             width="1760" height="520" loading="lazy" decoding="async">
-                    </picture>
+        <div class="hero-inner">
+            <div class="hero-copy">
+                <span class="hero-eyebrow">
+                    <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+                    كلية الهندسة · جامعة الجفرة
+                </span>
+
+                <h2 class="hero-title">
+                    أرشيف <span class="hero-accent">امتحانات</span>
+                    <span class="hero-title-2">كلية الهندسة</span>
+                </h2>
+
+                <p class="hero-lead">
+                    امتحانات السنوات السابقة، الجداول الدراسية، والمنهج والشيتات —
+                    كل ما تحتاجه لمسيرتك الدراسية في مكان واحد.
+                </p>
+
+                <div class="hero-actions">
+                    <a class="hero-btn hero-btn--primary" href="#departmentsSection">
+                        <i class="fas fa-building-columns" aria-hidden="true"></i>
+                        <span>تصفّح الأقسام</span>
+                    </a>
+                    <a class="hero-btn hero-btn--ghost" href="#timetablesSection">
+                        <i class="fas fa-table-list" aria-hidden="true"></i>
+                        <span>الجداول الدراسية</span>
+                    </a>
                 </div>
-            </figure>
+
+                <ul class="hero-points">
+                    <li><i class="fas fa-eye" aria-hidden="true"></i> معاينة فورية</li>
+                    <li><i class="fas fa-download" aria-hidden="true"></i> تحميل مباشر</li>
+                    <li><i class="fas fa-shield-halved" aria-hidden="true"></i> ملفات موثّقة</li>
+                </ul>
+            </div>
+
+            <div class="hero-stage" aria-hidden="true">
+                <div class="stage-card">
+                    <div class="stage-top">
+                        <span class="stage-dots"><i></i><i></i><i></i></span>
+                        <span class="stage-tag">ENG · ARCHIVE</span>
+                    </div>
+
+                    <svg class="stage-plot" viewBox="0 0 320 170" fill="none" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="plotStroke" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0" stop-color="#fbbf24"></stop>
+                                <stop offset="1" stop-color="#60a5fa"></stop>
+                            </linearGradient>
+                        </defs>
+                        <g stroke="rgba(255,255,255,.16)" stroke-width="1">
+                            <path d="M20 20H300M20 55H300M20 90H300M20 125H300"></path>
+                            <path d="M20 20V150M90 20V150M160 20V150M230 20V150M300 20V150"></path>
+                        </g>
+                        <path d="M20 150H300M20 20V150" stroke="rgba(255,255,255,.42)" stroke-width="1.4"></path>
+                        <path class="stage-curve" d="M24 146 C 80 146, 96 40, 160 40 S 240 130, 296 66"
+                              stroke="url(#plotStroke)" stroke-width="3" stroke-linecap="round"></path>
+                        <circle cx="160" cy="40" r="5" fill="#fbbf24"></circle>
+                        <circle cx="296" cy="66" r="4" fill="#60a5fa"></circle>
+                    </svg>
+
+                    <div class="stage-rows">
+                        <div class="stage-row">
+                            <span class="stage-mono">&#8747; f(x) dx</span>
+                            <span class="stage-badge">MATH</span>
+                        </div>
+                        <div class="stage-row">
+                            <span class="stage-mono">&#916;v / &#916;t</span>
+                            <span class="stage-badge stage-badge--blue">PHYS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <span class="stage-chip stage-chip--pdf"><i class="fas fa-file-pdf"></i> PDF</span>
+                <span class="stage-chip stage-chip--table"><i class="fas fa-table-list"></i> الجداول</span>
+            </div>
         </div>
     </section>
 
@@ -108,10 +166,6 @@
                 <i class="fas fa-table-list"></i> الجداول الدراسية
                 <span class="section-subtitle">الفصل الحالي</span>
             </h2>
-            <p class="timetables-note">
-                <i class="fas fa-circle-info"></i>
-                جدول الفصل الدراسي الحالي بالتفصيل — ويُتاح لكل جدول عرض الصورة الرسمية وتحميلها.
-            </p>
             <div class="timetables-grid" id="timetablesGrid"></div>
         </div>
     </section>
@@ -188,6 +242,22 @@
             </section>
         </div>
     </main>
+
+    <!-- College Banner -->
+    <section class="banner-section" id="bannerSection">
+        <div class="container">
+            <figure class="banner-frame">
+                <div class="banner-inner">
+                    <picture>
+                        <source srcset="images/banner.webp" type="image/webp">
+                        <img src="images/banner.png"
+                             alt="كلية الهندسة – جامعة الجفرة: ليبيا تبني المستقبل"
+                             width="1760" height="520" loading="lazy" decoding="async">
+                    </picture>
+                </div>
+            </figure>
+        </div>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
