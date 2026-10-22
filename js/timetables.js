@@ -84,8 +84,8 @@
     var MIN_ZOOM = 0.4;
     var MAX_ZOOM = 6;
 
-    /* ---------- بناء الجدول النصي ---------- */
-    function renderSchedule(s) {
+    /* ---------- بناء الجدول النصي (يُستخدم داخل نافذة العرض فقط) ---------- */
+    function buildTable(s) {
         var today = WEEKDAYS[new Date().getDay()];
 
         var head = s.slots.map(function (slot) {
@@ -113,28 +113,32 @@
         }).join('');
 
         return '' +
+            '<table class="tt-table">' +
+                '<caption class="tt-caption">جدول ' + esc(s.department) + ' — ' + esc(s.term + ' ' + s.year) + '</caption>' +
+                '<thead><tr><th scope="col" class="tt-col-day">اليوم</th>' + head + '</tr></thead>' +
+                '<tbody>' + body + '</tbody>' +
+            '</table>';
+    }
+
+    /* ---------- بطاقة الجدول (بدون جدول ظاهر — الجدول يُفتح بزر «عرض الجدول») ---------- */
+    function renderSchedule(s) {
+        return '' +
             '<article class="tt-sheet">' +
-                '<header class="tt-sheet-head">' +
-                    '<div class="tt-sheet-titles">' +
-                        '<h3><i class="fas fa-table-list"></i> ' + esc(s.department) + '</h3>' +
-                        '<p class="tt-sheet-meta">' +
-                            '<i class="fas fa-calendar-days"></i> ' + esc(s.term + ' ' + s.year) +
-                        '</p>' +
+                '<div class="tt-cover">' +
+                    (s.isNew ? '<span class="timetable-badge">جديد</span>' : '') +
+                    '<span class="tt-cover-icon"><i class="fas fa-table-list" aria-hidden="true"></i></span>' +
+                '</div>' +
+                '<div class="timetable-body">' +
+                    '<h3><i class="fas fa-table-list" aria-hidden="true"></i> ' + esc(s.department) + '</h3>' +
+                    '<div class="timetable-meta">' +
+                        '<span><i class="fas fa-calendar-days" aria-hidden="true"></i> ' + esc(s.term + ' ' + s.year) + '</span>' +
+                        '<span><i class="fas fa-calendar-week" aria-hidden="true"></i> ' + s.days.length + ' أيام دراسية</span>' +
                     '</div>' +
-                    '<div class="tt-head-side">' +
-                        (s.isNew ? '<span class="timetable-badge">جديد</span>' : '') +
-                        '<button type="button" class="tt-open-hint" data-sheet="' + esc(s.id) + '"' +
-                            ' aria-label="عرض جدول ' + esc(s.department) + ' في نافذة كاملة">' +
+                    '<div class="timetable-actions">' +
+                        '<button type="button" class="btn btn-primary" data-sheet="' + esc(s.id) + '">' +
                             '<i class="fas fa-expand" aria-hidden="true"></i> عرض الجدول' +
                         '</button>' +
                     '</div>' +
-                '</header>' +
-                '<div class="tt-scroll">' +
-                    '<table class="tt-table">' +
-                        '<caption class="tt-caption">جدول ' + esc(s.department) + ' — ' + esc(s.term + ' ' + s.year) + '</caption>' +
-                        '<thead><tr><th scope="col" class="tt-col-day">اليوم</th>' + head + '</tr></thead>' +
-                        '<tbody>' + body + '</tbody>' +
-                    '</table>' +
                 '</div>' +
             '</article>';
     }
@@ -394,24 +398,21 @@
     /* ---------- عرض الجدول النصي مكبّراً (نافذة كاملة) ---------- */
     var sheetReturnFocus = null;
 
-    function openSheet(id, triggerEl) {
+    function openSheet(id) {
         var modal = document.getElementById('sheetModal');
         var body = document.getElementById('sheetModalBody');
         var title = document.getElementById('sheetModalTitle');
         var meta = document.getElementById('sheetModalMeta');
-
-        var sheetEl = triggerEl && triggerEl.closest ? triggerEl.closest('.tt-sheet') : null;
-        var source = sheetEl ? sheetEl.querySelector('.tt-table')
-            : document.querySelector('.tt-sheet[data-sheet="' + id + '"] .tt-table');
-        if (!modal || !body || !source) return;
 
         var schedule = null;
         for (var i = 0; i < SCHEDULES.length; i++) {
             if (SCHEDULES[i].id === id) schedule = SCHEDULES[i];
         }
 
-        if (title) title.textContent = schedule ? schedule.department : 'الجدول الدراسي';
-        if (meta) meta.textContent = schedule ? (schedule.term + ' ' + schedule.year) : '';
+        if (!modal || !body || !schedule) return;
+
+        if (title) title.textContent = schedule.department;
+        if (meta) meta.textContent = schedule.term + ' ' + schedule.year;
 
         sheetReturnFocus = document.activeElement;
 
@@ -423,8 +424,7 @@
 
         /* إدراج المحتوى بعد ظهور النافذة — يمنع قفزة التمرير في المتصفح */
         function insert() {
-            body.innerHTML = '';
-            body.appendChild(source.cloneNode(true));
+            body.innerHTML = buildTable(schedule);
             body.scrollTop = 0;
 
             window.setTimeout(function () {
@@ -464,7 +464,7 @@
 
         document.addEventListener('click', function (e) {
             var trigger = e.target.closest ? e.target.closest('[data-sheet]') : null;
-            if (trigger) openSheet(trigger.getAttribute('data-sheet'), trigger);
+            if (trigger) openSheet(trigger.getAttribute('data-sheet'));
         });
 
         document.addEventListener('keydown', function (e) {
@@ -476,7 +476,7 @@
             if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return;
 
             e.preventDefault();
-            openSheet(el.getAttribute('data-sheet'), el);
+            openSheet(el.getAttribute('data-sheet'));
         });
     }
 

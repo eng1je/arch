@@ -4185,3 +4185,285 @@ body.sheet-open { overflow: hidden; }
 
     .sheet-modal__body .tt-course { font-size: 0.92rem; }
 }
+
+
+/* ==========================================================================
+   ✦ طبقة 2026 — بطاقة الجدول (بدون جدول ظاهر) + هيرو أنظف + تذييل حديث
+   ========================================================================== */
+
+/* ---------- 1) الهيرو بعد إزالة الوصف والنقاط ---------- */
+.hero-inner { min-height: 400px; }
+
+.hero h2.hero-title {
+    font-size: clamp(2.15rem, 5vw, 3.7rem);
+    line-height: 1.18;
+    margin-top: 1.15rem;
+}
+
+.hero-actions { margin-top: 2.1rem; }
+
+@media (max-width: 980px) {
+    .hero-inner { min-height: 0; }
+    .hero-actions { margin-top: 1.65rem; }
+}
+
+/* ---------- 2) بطاقة الجدول: عرض فقط، والجدول يظهر عند الضغط على «عرض الجدول» ---------- */
+.tt-sheet {
+    grid-column: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease,
+        border-color 0.35s ease;
+}
+
+.tt-sheet::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    z-index: 4;
+    background: linear-gradient(90deg, var(--gold-600), var(--gold-400), var(--gold-600));
+}
+
+.tt-sheet:hover {
+    transform: translateY(-6px);
+    border-color: rgba(245, 158, 11, 0.55);
+    box-shadow: var(--shadow-xl);
+}
+
+/* غلاف فني (بدون أي بيانات من الجدول) */
+.tt-cover {
+    position: relative;
+    height: 268px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background:
+        radial-gradient(120% 95% at 82% 6%, rgba(251, 191, 36, 0.28), transparent 56%),
+        radial-gradient(115% 95% at 8% 94%, rgba(59, 130, 246, 0.38), transparent 60%),
+        linear-gradient(158deg, #10244a 0%, #0a1730 55%, #060d1c 100%);
+}
+
+.tt-cover::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 36px 36px;
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 12%, transparent 76%);
+    mask-image: radial-gradient(circle at 50% 50%, #000 12%, transparent 76%);
+}
+
+.tt-cover::after {
+    content: '';
+    position: absolute;
+    width: 214px;
+    height: 214px;
+    border-radius: 50%;
+    border: 1px solid rgba(251, 191, 36, 0.32);
+    box-shadow: 0 0 70px rgba(251, 191, 36, 0.16), inset 0 0 60px rgba(251, 191, 36, 0.07);
+    animation: ttRingPulse 8s ease-in-out infinite;
+}
+
+.tt-cover-icon {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 86px;
+    height: 86px;
+    border-radius: 28px;
+    border: 1px solid rgba(251, 191, 36, 0.42);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.02));
+    color: #fcd34d;
+    font-size: 2.1rem;
+    box-shadow:
+        0 26px 48px -24px rgba(0, 0, 0, 0.9),
+        inset 0 1px 0 rgba(255, 255, 255, 0.36),
+        0 0 40px -8px rgba(251, 191, 36, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease;
+}
+
+.tt-sheet:hover .tt-cover-icon {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow:
+        0 30px 56px -24px rgba(0, 0, 0, 0.95),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        0 0 54px -6px rgba(251, 191, 36, 0.75);
+}
+
+.tt-cover .timetable-badge {
+    top: 1rem;
+    right: auto;
+    inset-inline-start: 1rem;
+}
+
+.tt-sheet .timetable-actions .btn { min-height: 46px; }
+
+@keyframes ttRingPulse {
+    0%, 100% { transform: scale(1); opacity: 0.72; }
+    50% { transform: scale(1.07); opacity: 1; }
+}
+
+/* ---------- 3) التذييل: تصميم حديث ---------- */
+.footer {
+    margin-top: 0;
+    padding: clamp(3rem, 5.5vw, 4.3rem) 1.5rem clamp(2.6rem, 4.5vw, 3.4rem);
+    isolation: isolate;
+    background:
+        radial-gradient(760px 320px at 50% 116%, rgba(245, 158, 11, 0.22), transparent 68%),
+        radial-gradient(1000px 420px at 50% -25%, rgba(56, 116, 214, 0.32), transparent 72%),
+        linear-gradient(180deg, #08142b 0%, #0a1730 45%, #050b18 100%);
+    border-top: 0;
+}
+
+.footer::before {
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(245, 158, 11, 0.55) 18%,
+        rgba(255, 255, 255, 0.85) 50%,
+        rgba(245, 158, 11, 0.55) 82%,
+        transparent 100%);
+    box-shadow: 0 0 26px rgba(245, 158, 11, 0.45);
+}
+
+.footer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    -webkit-mask-image: radial-gradient(ellipse 65% 90% at 50% 105%, #000 8%, transparent 76%);
+    mask-image: radial-gradient(ellipse 65% 90% at 50% 105%, #000 8%, transparent 76%);
+}
+
+.footer-content {
+    max-width: 760px;
+    margin: 0 auto;
+    gap: 1.15rem;
+}
+
+.footer-content::before {
+    content: '';
+    width: min(180px, 42vw);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.7), transparent);
+}
+
+.footer-content::after {
+    content: '✦';
+    color: rgba(245, 158, 11, 0.55);
+    font-size: 0.85rem;
+    line-height: 1;
+    text-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
+}
+
+.dev-badge {
+    width: 78px;
+    height: 78px;
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    background:
+        radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.03) 62%),
+        linear-gradient(160deg, rgba(22, 42, 82, 0.92), rgba(6, 12, 26, 0.95));
+    box-shadow:
+        0 24px 46px -20px rgba(0, 0, 0, 0.95),
+        inset 0 1px 0 rgba(255, 255, 255, 0.32),
+        0 0 48px -6px rgba(251, 191, 36, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.dev-badge i { font-size: 1.7rem; }
+
+.dev-badge::before {
+    inset: -11px;
+    border: 1px dashed rgba(251, 191, 36, 0.38);
+    animation: emblemSpin 34s linear infinite;
+}
+
+.dev-badge::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: conic-gradient(from 210deg,
+        transparent 0deg 250deg,
+        rgba(251, 191, 36, 0.85) 300deg,
+        transparent 360deg);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+    animation: emblemSpin 6s linear infinite;
+    opacity: 0.9;
+}
+
+.credit {
+    font-size: clamp(1.75rem, 3.6vw, 2.3rem);
+    letter-spacing: 0.012em;
+    background: linear-gradient(100deg,
+        #fde68a 0%,
+        #fff8e1 16%,
+        #fbbf24 34%,
+        #b45309 50%,
+        #fcd34d 66%,
+        #fff8e1 84%,
+        #f59e0b 100%);
+    background-size: 240% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: creditShine 9s ease-in-out infinite;
+    filter: drop-shadow(0 10px 26px rgba(245, 158, 11, 0.34));
+}
+
+@keyframes creditShine {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@media (max-width: 640px) {
+    .footer { padding: 2.6rem 1.15rem 2.1rem; }
+
+    .dev-badge {
+        width: 62px;
+        height: 62px;
+    }
+
+    .dev-badge i { font-size: 1.35rem; }
+
+    .dev-badge::before { inset: -8px; }
+
+    .dev-badge::after { inset: -5px; }
+
+    .credit { font-size: 1.4rem; }
+
+    .tt-cover { height: 200px; }
+
+    .tt-cover-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 22px;
+        font-size: 1.7rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .credit,
+    .dev-badge::after,
+    .dev-badge::before,
+    .tt-cover::after { animation: none; }
+}
