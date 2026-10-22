@@ -41,6 +41,9 @@ tabs.forEach(tab => {
             case 'materials':
                 pageTitle.textContent = 'إدارة المنهج والشيتات';
                 break;
+            case 'timetables':
+                pageTitle.textContent = 'إدارة الجداول الدراسية';
+                break;
             case 'activity':
                 pageTitle.textContent = 'سجل النشاط';
                 break;
@@ -57,6 +60,7 @@ tabs.forEach(tab => {
 
         if (tabName === 'activity') renderActivityTable();
         if (tabName === 'materials') loadMaterialsAdmin();
+        if (tabName === 'timetables') loadTimetablesAdmin();
         if (tabName === 'backup') renderBackupSummary();
     });
 });
@@ -1665,3 +1669,456 @@ function deleteMaterial(id) {
         }
     );
 }
+
+/* ============================================================
+   الجداول الدراسية — إضافة / تعديل / حذف / نشر
+   ============================================================ */
+const TT_DAYS = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
+const TT_MAX_SLOTS = 5;
+
+let timetablesAdmin = [];
+let ttEditingId = null;
+
+function ttDefaultModel() {
+    return {
+        slots: ['9 – 11', '11 – 1', '1 – 3'],
+        days: TT_DAYS.map(function (name) {
+            return { name: name, courses: ['', '', ''] };
+        })
+    };
+}
+
+let ttModel = ttDefaultModel();
+
+function ttFillCourses(day, count) {
+    while (day.courses.length < count) day.courses.push('');
+    if (day.courses.length > count) day.courses.length = count;
+    return day;
+}
+
+function renderTTSlots() {
+    const wrap = document.getElementById('ttSlots');
+    if (!wrap) return;
+
+    wrap.innerHTML = ttModel.slots.map(function (value, i) {
+        return '' +
+            '<div class="tt-slot-row">' +
+                '<span class="tt-slot-num">' + (i + 1) + '</span>' +
+                '<input type="text" class="tt-slot-input" data-slot="' + i + '" maxlength="18" dir="ltr"' +
+                    ' value="' + escapeHtml(value) + '" aria-label="وقت الفترة ' + (i + 1) + '">' +
+                '<button type="button" class="icon-btn tt-slot-del" data-slot-del="' + i + '"' +
+                    ' title="حذف الفترة" aria-label="حذف الفترة ' + (i + 1) + '">' +
+                    '<i class="fas fa-xmark"></i>' +
+                '</button>' +
+            '</div>';
+    }).join('');
+}
+
+function renderTTGrid() {
+    const wrap = document.getElementById('ttEditWrap');
+    if (!wrap) return;
+
+    const slots = ttModel.slots;
+
+    const head = '<tr><th scope="col" class="tt-col-day">اليوم</th>' +
+        slots.map(function (slot, i) {
+            return '<th scope="col"><span class="tt-col-slot" dir="ltr" data-slot-label="' + i + '">' +
+                escapeHtml(slot || ('فترة ' + (i + 1))) + '</span></th>';
+        }).join('') + '</tr>';
+
+    const body = TT_DAYS.map(function (name) {
+        const day = ttModel.days.find(function (d) { return d.name === name; });
+        const active = !!day;
+        const courses = day ? day.courses : [];
+
+        const cells = slots.map(function (slot, i) {
+            return '<td>' +
+                '<input type="text" class="tt-cell-input" data-day="' + escapeHtml(name) + '" data-slot="' + i + '"' +
+                    ' value="' + escapeHtml(courses[i] || '') + '"' + (active ? '' : ' disabled') +
+                    ' placeholder="—" aria-label="مادة ' + escapeHtml(name) + ' — ' + escapeHtml(slot) + '">' +
+            '</td>';
+        }).join('');
+
+        return '<tr class="' + (active ? '' : 'is-off') + '">' +
+            '<th scope="row">' +
+                '<label class="tt-day-label">' +
+                    '<input type="checkbox" class="tt-day-check" value="' + escapeHtml(name) + '"' + (active ? ' checked' : '') + '>' +
+                    '<span>' + escapeHtml(name) + '</span>' +
+                '</label>' +
+            '</th>' + cells +
+        '</tr>';
+    }).join('');
+
+    wrap.innerHTML = '<table class="tt-edit-grid"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>';
+}
+
+function ttAddSlot() {
+    if (ttModel.slots.length >= TT_MAX_SLOTS) {
+        showToast('الحد الأقصى ' + TT_MAX_SLOTS + ' فترات', 'warning');
+        return;
+    }
+    ttModel.slots.push('');
+    ttModel.days.forEach(function (day) { day.courses.push(''); });
+    renderTTSlots();
+    renderTTGrid();
+
+    const inputs = document.querySelectorAll('.tt-slot-input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+function ttRemoveSlot(index) {
+    if (ttModel.slots.length <= 1) {
+        showToast('يجب أن تبقى فترة واحدة على الأقل', 'warning');
+        return;
+    }
+    ttModel.slots.splice(index, 1);
+    ttModel.days.forEach(function (day) { day.courses.splice(index, 1); });
+    renderTTSlots();
+    renderTTGrid();
+}
+
+function resetTTForm() {
+    ttEditingId = null;
+    ttModel = ttDefaultModel();
+
+    const form = document.getElementById('timetableForm');
+    if (form) form.reset();
+
+    const dept = document.getElementById('ttDepartment');
+    const term = document.getElementById('ttTerm');
+    const year = document.getElementById('ttYear');
+    const isNew = document.getElementById('ttIsNew');
+    const title = document.getElementById('ttFormTitle');
+    const cancel = document.getElementById('ttCancelEdit');
+    const save = document.getElementById('ttSaveBtn');
+
+    if (dept) dept.value = '';
+    if (term) term.value = 'فصل الخريف';
+    if (year) year.value = '2026 – 2027';
+    if (isNew) isNew.checked = false;
+    if (title) title.innerHTML = '<i class="fas fa-plus"></i> إضافة جدول جديد';
+    if (cancel) cancel.hidden = true;
+    if (save) save.innerHTML = '<i class="fas fa-floppy-disk"></i> حفظ الجدول';
+
+    renderTTSlots();
+    renderTTGrid();
+}
+
+async function loadTimetablesAdmin() {
+    const tbody = document.getElementById('timetablesTableBody');
+    if (!tbody) return;
+
+    try {
+        const { data, error } = await db
+            .from(TABLE_TIMETABLES)
+            .select('*')
+            .order('sort_order', { ascending: true })
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        timetablesAdmin = data || [];
+        renderTimetablesAdminTable();
+    } catch (error) {
+        console.error('Error loading timetables:', error);
+        timetablesAdmin = [];
+        renderTimetablesAdminTable();
+        showToast('تعذّر تحميل الجداول — نفّذ ملف supabase/timetables.sql في Supabase أولاً', 'error', 5000);
+    }
+}
+
+function renderTimetablesAdminTable() {
+    const tbody = document.getElementById('timetablesTableBody');
+    const empty = document.getElementById('timetablesTableEmpty');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (timetablesAdmin.length === 0) {
+        if (empty) empty.style.display = 'block';
+        return;
+    }
+
+    if (empty) empty.style.display = 'none';
+
+    timetablesAdmin.forEach(function (item, index) {
+        const daysCount = Array.isArray(item.days) ? item.days.length : 0;
+        const row = document.createElement('tr');
+        row.innerHTML = '' +
+            '<td>' + (index + 1) + '</td>' +
+            '<td><strong>' + escapeHtml(item.department) + '</strong>' +
+                (item.is_new ? ' <span class="tt-badge-new">جديد</span>' : '') + '</td>' +
+            '<td>' + escapeHtml(item.term || '-') + ' · ' + escapeHtml(item.year || '') + '</td>' +
+            '<td>' + daysCount + ' أيام</td>' +
+            '<td>' + (item.is_published
+                ? '<span class="status-pill is-on"><i class="fas fa-circle-check"></i> منشور</span>'
+                : '<span class="status-pill is-off"><i class="fas fa-eye-slash"></i> مخفي</span>') + '</td>' +
+            '<td>' + formatDate(item.updated_at || item.created_at) + '</td>' +
+            '<td>' +
+                '<div class="table-actions">' +
+                    '<button type="button" class="btn btn-sm btn-info" data-tt-edit="' + item.id + '">' +
+                        '<i class="fas fa-pen"></i> تعديل</button>' +
+                    '<button type="button" class="btn btn-sm btn-ghost" data-tt-toggle="' + item.id + '">' +
+                        '<i class="fas fa-' + (item.is_published ? 'eye-slash' : 'eye') + '"></i> ' +
+                        (item.is_published ? 'إخفاء' : 'نشر') + '</button>' +
+                    '<button type="button" class="btn btn-sm btn-delete" data-tt-del="' + item.id + '">' +
+                        '<i class="fas fa-trash"></i> حذف</button>' +
+                '</div>' +
+            '</td>';
+        tbody.appendChild(row);
+    });
+}
+
+function editTimetable(id) {
+    const item = timetablesAdmin.find(function (row) { return row.id === id; });
+    if (!item) return;
+
+    ttEditingId = id;
+
+    const slots = Array.isArray(item.slots) && item.slots.length ? item.slots.slice() : ['9 – 11', '11 – 1', '1 – 3'];
+    const daysIn = Array.isArray(item.days) ? item.days : [];
+
+    ttModel = {
+        slots: slots.slice(0, TT_MAX_SLOTS),
+        days: daysIn
+            .filter(function (d) { return d && d.name; })
+            .map(function (d) {
+                return ttFillCourses({
+                    name: d.name,
+                    courses: Array.isArray(d.courses) ? d.courses.slice() : []
+                }, slots.length);
+            })
+    };
+
+    const dept = document.getElementById('ttDepartment');
+    const term = document.getElementById('ttTerm');
+    const year = document.getElementById('ttYear');
+    const isNew = document.getElementById('ttIsNew');
+    const title = document.getElementById('ttFormTitle');
+    const cancel = document.getElementById('ttCancelEdit');
+    const save = document.getElementById('ttSaveBtn');
+
+    if (dept) dept.value = item.department || '';
+    if (term) {
+        const exists = Array.prototype.some.call(term.options, function (o) { return o.value === item.term; });
+        term.value = exists ? item.term : 'فصل الخريف';
+    }
+    if (year) year.value = item.year || '2026 – 2027';
+    if (isNew) isNew.checked = !!item.is_new;
+    if (title) title.innerHTML = '<i class="fas fa-pen"></i> تعديل جدول: ' + escapeHtml(item.department);
+    if (cancel) cancel.hidden = false;
+    if (save) save.innerHTML = '<i class="fas fa-floppy-disk"></i> حفظ التعديلات';
+
+    renderTTSlots();
+    renderTTGrid();
+
+    const form = document.getElementById('timetableForm');
+    if (form && form.scrollIntoView) {
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (dept) dept.focus({ preventScroll: true });
+}
+
+function deleteTimetable(id) {
+    const item = timetablesAdmin.find(function (row) { return row.id === id; });
+    if (!item) return;
+
+    showDeleteModal('هل أنت متأكد من حذف جدول «' + item.department + '»؟', async function () {
+        try {
+            const { error } = await db.from(TABLE_TIMETABLES).delete().eq('id', id);
+            if (error) throw error;
+
+            logActivity('حذف جدول', 'timetables', item.department);
+            showToast('تم حذف الجدول', 'success');
+
+            if (ttEditingId === id) resetTTForm();
+            await loadTimetablesAdmin();
+        } catch (error) {
+            console.error('Error deleting timetable:', error);
+            showToast(translateDbError(error), 'error');
+        }
+    });
+}
+
+async function toggleTimetablePublish(id) {
+    const item = timetablesAdmin.find(function (row) { return row.id === id; });
+    if (!item) return;
+
+    try {
+        const { error } = await db
+            .from(TABLE_TIMETABLES)
+            .update({ is_published: !item.is_published })
+            .eq('id', id);
+
+        if (error) throw error;
+
+        showToast(item.is_published ? 'تم إخفاء الجدول من الموقع' : 'تم نشر الجدول على الموقع', 'success');
+        logActivity(item.is_published ? 'إخفاء جدول' : 'نشر جدول', 'timetables', item.department);
+        await loadTimetablesAdmin();
+    } catch (error) {
+        console.error('Error toggling timetable:', error);
+        showToast(translateDbError(error), 'error');
+    }
+}
+
+async function handleTimetableSubmit(e) {
+    e.preventDefault();
+
+    const dept = document.getElementById('ttDepartment').value.trim();
+    const term = document.getElementById('ttTerm').value;
+    const year = document.getElementById('ttYear').value.trim();
+    const isNew = document.getElementById('ttIsNew').checked;
+    const saveBtn = document.getElementById('ttSaveBtn');
+
+    if (!dept) { showToast('يرجى كتابة اسم القسم', 'warning'); document.getElementById('ttDepartment').focus(); return; }
+
+    if (!ttModel.slots.length) { showToast('أضف فترة واحدة على الأقل', 'warning'); return; }
+    if (!ttModel.days.length) { showToast('اختر يوماً واحداً على الأقل', 'warning'); return; }
+
+    const hasCourse = ttModel.days.some(function (day) {
+        return day.courses.some(function (course) { return String(course || '').trim() !== ''; });
+    });
+    if (!hasCourse) { showToast('أضف مادة واحدة على الأقل داخل الجدول', 'warning'); return; }
+
+    const payload = {
+        department: dept,
+        term: term,
+        year: year || '2026 – 2027',
+        slots: ttModel.slots.map(function (slot) { return String(slot || '').trim(); }),
+        days: ttModel.days.map(function (day) {
+            return {
+                name: day.name,
+                courses: day.courses.map(function (course) { return String(course || '').trim(); })
+            };
+        }),
+        is_new: isNew,
+        is_published: true
+    };
+
+    const originalLabel = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    try {
+        if (ttEditingId) {
+            const { error } = await db.from(TABLE_TIMETABLES).update(payload).eq('id', ttEditingId);
+            if (error) throw error;
+            logActivity('تعديل جدول', 'timetables', dept);
+            showToast('تم تحديث الجدول بنجاح', 'success');
+        } else {
+            const { error } = await db.from(TABLE_TIMETABLES).insert([payload]);
+            if (error) throw error;
+            logActivity('إضافة جدول', 'timetables', dept);
+            showToast('تمت إضافة الجدول بنجاح', 'success');
+        }
+
+        resetTTForm();
+        await loadTimetablesAdmin();
+    } catch (error) {
+        console.error('Error saving timetable:', error);
+        const missing = error && (error.code === 'PGRST205' || /could not find the table/i.test(error.message || ''));
+        showToast(missing
+            ? 'جدول الجداول غير موجود — نفّذ ملف supabase/timetables.sql في Supabase'
+            : translateDbError(error), 'error', 5000);
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalLabel;
+    }
+}
+
+function initTimetableAdmin() {
+    const form = document.getElementById('timetableForm');
+    if (!form) return;
+
+    renderTTSlots();
+    renderTTGrid();
+
+    form.addEventListener('submit', handleTimetableSubmit);
+
+    const slotsWrap = document.getElementById('ttSlots');
+    if (slotsWrap) {
+        slotsWrap.addEventListener('input', function (e) {
+            const input = e.target.closest('.tt-slot-input');
+            if (!input) return;
+            const index = parseInt(input.dataset.slot, 10);
+            ttModel.slots[index] = input.value;
+            const label = document.querySelector('[data-slot-label="' + index + '"]');
+            if (label) label.textContent = input.value || ('فترة ' + (index + 1));
+        });
+
+        slotsWrap.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-slot-del]');
+            if (!btn) return;
+            ttRemoveSlot(parseInt(btn.getAttribute('data-slot-del'), 10));
+        });
+    }
+
+    const addSlot = document.getElementById('ttAddSlot');
+    if (addSlot) addSlot.addEventListener('click', ttAddSlot);
+
+    const gridWrap = document.getElementById('ttEditWrap');
+    if (gridWrap) {
+        gridWrap.addEventListener('change', function (e) {
+            const check = e.target.closest('.tt-day-check');
+            if (!check) return;
+
+            const name = check.value;
+
+            if (check.checked) {
+                if (!ttModel.days.some(function (d) { return d.name === name; })) {
+                    ttModel.days.push(ttFillCourses({ name: name, courses: [] }, ttModel.slots.length));
+                }
+            } else {
+                ttModel.days = ttModel.days.filter(function (d) { return d.name !== name; });
+            }
+
+            // حافظ على ترتيب أيام الأسبوع
+            ttModel.days.sort(function (a, b) { return TT_DAYS.indexOf(a.name) - TT_DAYS.indexOf(b.name); });
+            renderTTGrid();
+        });
+
+        gridWrap.addEventListener('input', function (e) {
+            const input = e.target.closest('.tt-cell-input');
+            if (!input) return;
+            const day = ttModel.days.find(function (d) { return d.name === input.dataset.day; });
+            if (!day) return;
+            day.courses[parseInt(input.dataset.slot, 10)] = input.value;
+        });
+    }
+
+    const cancel = document.getElementById('ttCancelEdit');
+    if (cancel) cancel.addEventListener('click', function () {
+        resetTTForm();
+        showToast('تم إلغاء التعديل', 'info', 1800);
+    });
+
+    const reset = document.getElementById('ttResetBtn');
+    if (reset) reset.addEventListener('click', function () {
+        resetTTForm();
+        showToast('تم تفريغ النموذج', 'info', 1800);
+    });
+
+    const newBtn = document.getElementById('ttNewBtn');
+    if (newBtn) newBtn.addEventListener('click', function () {
+        resetTTForm();
+        const dept = document.getElementById('ttDepartment');
+        if (dept) dept.focus();
+        showToast('نموذج جدول جديد جاهز', 'info', 1800);
+    });
+
+    const tbody = document.getElementById('timetablesTableBody');
+    if (tbody) {
+        tbody.addEventListener('click', function (e) {
+            const edit = e.target.closest('[data-tt-edit]');
+            if (edit) { editTimetable(edit.getAttribute('data-tt-edit')); return; }
+
+            const toggle = e.target.closest('[data-tt-toggle]');
+            if (toggle) { toggleTimetablePublish(toggle.getAttribute('data-tt-toggle')); return; }
+
+            const del = e.target.closest('[data-tt-del]');
+            if (del) { deleteTimetable(del.getAttribute('data-tt-del')); }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initTimetableAdmin);

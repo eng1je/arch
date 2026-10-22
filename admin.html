@@ -6,7 +6,7 @@
     <title>لوحة إدارة الأرشيف - كلية الهندسة جامعة الجفرة</title>
     <link rel="icon" type="image/png" href="images/logo-128.png">
     <link rel="apple-touch-icon" href="images/logo-128.png">
-    <link rel="stylesheet" href="css/admin.css?v=20261022c">
+    <link rel="stylesheet" href="css/admin.css?v=20261023c">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -71,6 +71,9 @@
                 </button>
                 <button class="nav-item" data-tab="materials">
                     <i class="fas fa-book-open-reader"></i> المنهج والشيتات
+                </button>
+                <button class="nav-item" data-tab="timetables">
+                    <i class="fas fa-table-list"></i> الجداول الدراسية
                 </button>
 
                 <span class="nav-label">النظام</span>
@@ -345,6 +348,100 @@
                 </div>
             </div>
 
+            <!-- Timetables Tab -->
+            <div id="timetablesTab" class="tab-content">
+                <div class="tab-header">
+                    <h2 class="tab-title">الجداول الدراسية</h2>
+                    <div class="tab-actions">
+                        <button type="button" class="btn btn-ghost" id="ttNewBtn">
+                            <i class="fas fa-plus"></i> جدول جديد
+                        </button>
+                    </div>
+                </div>
+
+                <form id="timetableForm" class="tt-form" novalidate>
+                    <div class="tt-form-head">
+                        <h3 id="ttFormTitle"><i class="fas fa-plus"></i> إضافة جدول جديد</h3>
+                        <button type="button" class="btn btn-ghost btn-sm" id="ttCancelEdit">
+                            <i class="fas fa-xmark"></i> إلغاء التعديل
+                        </button>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ttDepartment">القسم <span class="req">*</span></label>
+                            <input type="text" id="ttDepartment" required maxlength="80"
+                                   placeholder="مثال: الهندسة المدنية">
+                        </div>
+                        <div class="form-group">
+                            <label for="ttTerm">الفصل</label>
+                            <select id="ttTerm">
+                                <option value="فصل الخريف">فصل الخريف</option>
+                                <option value="فصل الربيع">فصل الربيع</option>
+                                <option value="الفصل الصيفي">الفصل الصيفي</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ttYear">السنة الدراسية</label>
+                            <input type="text" id="ttYear" maxlength="24" value="2026 – 2027">
+                        </div>
+                    </div>
+
+                    <div class="tt-builder">
+                        <div class="tt-builder-bar">
+                            <span class="tt-builder-label"><i class="fas fa-clock"></i> الفترات (أعمدة الجدول)</span>
+                            <button type="button" class="btn btn-ghost btn-sm" id="ttAddSlot">
+                                <i class="fas fa-plus"></i> إضافة فترة
+                            </button>
+                        </div>
+                        <div id="ttSlots" class="tt-slots"></div>
+
+                        <div class="tt-builder-bar">
+                            <span class="tt-builder-label"><i class="fas fa-calendar-week"></i> الأيام والمواد</span>
+                            <label class="tt-switch">
+                                <input type="checkbox" id="ttIsNew">
+                                <span>تمييز الجدول بـ «جديد»</span>
+                            </label>
+                        </div>
+                        <p class="tt-hint">
+                            <i class="fas fa-circle-info"></i>
+                            ضع اسم المادة في الخانة المناسبة، واترك الخانة فارغة إذا لم تكن هناك محاضرة.
+                        </p>
+                        <div class="table-wrapper tt-grid-wrap" id="ttEditWrap"></div>
+                    </div>
+
+                    <div class="tt-form-actions">
+                        <button type="submit" class="btn btn-primary" id="ttSaveBtn">
+                            <i class="fas fa-floppy-disk"></i> حفظ الجدول
+                        </button>
+                        <button type="button" class="btn btn-ghost" id="ttResetBtn">
+                            <i class="fas fa-rotate-left"></i> تفريغ
+                        </button>
+                    </div>
+                </form>
+
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">القسم</th>
+                                <th scope="col">الفصل والسنة</th>
+                                <th scope="col">الأيام</th>
+                                <th scope="col">الحالة</th>
+                                <th scope="col">آخر تعديل</th>
+                                <th scope="col">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timetablesTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="timetablesTableEmpty" style="display: none;">
+                    <i class="fas fa-table-list"></i>
+                    <p>لا توجد جداول مضافة حتى الآن — أضف أول جدول من الأعلى</p>
+                </div>
+            </div>
+
             <!-- Activity Log Tab -->
             <div id="activityTab" class="tab-content">
                 <div class="tab-header">
@@ -597,7 +694,7 @@
     <!-- Toast -->
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script src="js/config.js?v=20261022c"></script>
-    <script src="js/admin.js?v=20261022c"></script>
+    <script src="js/config.js?v=20261023c"></script>
+    <script src="js/admin.js?v=20261023c"></script>
 </body>
 </html>

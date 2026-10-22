@@ -56,6 +56,10 @@
 
     var WEEKDAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
+    /* الجداول المضافة من لوحة الإدارة (قاعدة البيانات) تُضاف إلى الجداول الثابتة */
+    var remoteSchedules = [];
+    var ALL_SCHEDULES = SCHEDULES.slice();
+
     /* ---------- أدوات مساعدة ---------- */
     function esc(value) {
         return String(value == null ? '' : value)
@@ -155,7 +159,7 @@
         var section = document.getElementById('timetablesSection');
         var grid = document.getElementById('timetablesGrid');
         if (!section || !grid) return;
-        if (!TIMETABLES.length && !SCHEDULES.length) return;
+        if (!TIMETABLES.length && !ALL_SCHEDULES.length) return;
 
         var cards = TIMETABLES.filter(function (item) { return !item.native; }).map(function (item) {
             var alt = 'الجدول الدراسي ' + item.department + ' - ' + item.term + ' ' + item.year;
@@ -184,9 +188,57 @@
                 '</article>';
         }).join('');
 
-        grid.innerHTML = SCHEDULES.map(renderSchedule).join('') + cards;
+        grid.innerHTML = ALL_SCHEDULES.map(renderSchedule).join('') + cards;
 
         section.style.display = 'block';
+    }
+
+    /* ---------- تحميل الجداول المضافة من لوحة الإدارة ---------- */
+    function normalizeRemote(row) {
+        var slots = Array.isArray(row.slots) ? row.slots : [];
+        var days = Array.isArray(row.days) ? row.days : [];
+
+        return {
+            id: row.id,
+            department: row.department,
+            term: row.term || 'فصل الخريف',
+            year: row.year || '',
+            isNew: !!row.is_new,
+            slots: slots,
+            days: days.map(function (day) {
+                return {
+                    name: day && day.name ? day.name : '',
+                    courses: Array.isArray(day && day.courses) ? day.courses : []
+                };
+            }).filter(function (day) { return day.name; })
+        };
+    }
+
+    function loadRemoteSchedules() {
+        if (typeof db === 'undefined' || !db || typeof TABLE_TIMETABLES === 'undefined') return;
+        if (!window.supabase || !db.from) return;
+
+        db.from(TABLE_TIMETABLES)
+            .select('*')
+            .eq('is_published', true)
+            .order('sort_order', { ascending: true })
+            .order('created_at', { ascending: true })
+            .then(function (res) {
+                if (res.error) throw res.error;
+
+                remoteSchedules = (res.data || [])
+                    .map(normalizeRemote)
+                    .filter(function (item) { return item.slots.length && item.days.length; });
+
+                if (!remoteSchedules.length) return;
+
+                ALL_SCHEDULES = SCHEDULES.concat(remoteSchedules);
+                renderTimetables();
+            })
+            .catch(function (error) {
+                /* الجدول غير مُنشأ بعد؟ لا شيء يحدث — تبقى الجداول الثابتة ظاهرة */
+                console.warn('تعذّر تحميل الجداول من قاعدة البيانات:', error && error.message ? error.message : error);
+            });
     }
 
     /* ---------- حساب مقياس "ملء الشاشة" ---------- */
@@ -405,8 +457,8 @@
         var meta = document.getElementById('sheetModalMeta');
 
         var schedule = null;
-        for (var i = 0; i < SCHEDULES.length; i++) {
-            if (SCHEDULES[i].id === id) schedule = SCHEDULES[i];
+        for (var i = 0; i < ALL_SCHEDULES.length; i++) {
+            if (ALL_SCHEDULES[i].id === id) schedule = ALL_SCHEDULES[i];
         }
 
         if (!modal || !body || !schedule) return;
@@ -484,5 +536,6 @@
         renderTimetables();
         initViewer();
         initSheetModal();
+        loadRemoteSchedules();
     });
 })();
