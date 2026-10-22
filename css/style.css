@@ -4005,3 +4005,188 @@ body {
     .hero-stage { display: none; }
     .hero-inner { gap: 0; }
 }
+
+/* ==========================================================================
+   ✦✦✦  نافذة عرض الجدول النصي بالحجم الكامل
+   ========================================================================== */
+
+body.sheet-open { overflow: hidden; }
+
+.sheet-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    display: grid;
+    place-items: center;
+    padding: clamp(0.75rem, 2.4vw, 2rem);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sheet-modal.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.sheet-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(6, 13, 28, 0.68);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+}
+
+.sheet-modal__panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(1080px, 100%);
+    max-height: min(92vh, 920px);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 50px 100px -32px rgba(3, 8, 20, 0.8);
+    transform: translateY(14px) scale(0.985);
+    transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sheet-modal.is-open .sheet-modal__panel { transform: none; }
+
+.sheet-modal__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.95rem 1.15rem;
+    border-bottom: 1px solid var(--hairline);
+    background: linear-gradient(180deg, #fbfcff, #ffffff);
+}
+
+.sheet-modal__titles {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.sheet-modal__titles h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    color: var(--navy-700);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.sheet-modal__titles h3::before {
+    content: '';
+    flex-shrink: 0;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold-400), var(--gold-600));
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.16);
+}
+
+#sheetModalMeta {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.sheet-modal__close {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--navy-700);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.sheet-modal__close:hover {
+    transform: rotate(90deg);
+    border-color: var(--hairline-gold);
+    background: linear-gradient(135deg, var(--gold-500), var(--gold-600));
+    color: #fff;
+}
+
+.sheet-modal__close:focus-visible {
+    outline: 3px solid rgba(245, 158, 11, 0.5);
+    outline-offset: 2px;
+}
+
+.sheet-modal__body {
+    flex: 1 1 auto;
+    overflow: auto;
+    overscroll-behavior: contain;
+    overflow-anchor: none;
+    -webkit-overflow-scrolling: touch;
+    background: #fff;
+}
+
+/* تكبير الجدول داخل النافذة */
+.sheet-modal__body .tt-table { font-size: 1rem; }
+
+.sheet-modal__body .tt-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 0.85rem 0.7rem;
+    font-size: 0.84rem;
+    box-shadow: inset 0 -1px 0 var(--hairline);
+}
+
+.sheet-modal__body .tt-table tbody th {
+    padding: 1.05rem 0.8rem 1.05rem 1.35rem;
+    font-size: 0.96rem;
+}
+
+.sheet-modal__body .tt-table td { padding: 1rem 0.8rem; }
+
+.sheet-modal__body .tt-course { font-size: 0.96rem; }
+
+/* هاتف: النافذة بكامل الشاشة */
+@media (max-width: 768px) {
+    .sheet-modal { padding: 0; }
+
+    .sheet-modal__panel {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border: 0;
+        border-radius: 0;
+    }
+
+    .sheet-modal__head {
+        padding: 0.75rem 0.9rem;
+        padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+    }
+
+    .sheet-modal__titles h3 { font-size: 1rem; }
+
+    .sheet-modal__body {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        background: #f7f9fd;
+    }
+
+    .sheet-modal__body .tt-table {
+        padding: 0.8rem 0.8rem 0.25rem;
+        font-size: 0.95rem;
+    }
+
+    .sheet-modal__body .tt-table thead { position: static; }
+
+    .sheet-modal__body .tt-table td { padding: 0.62rem 0; }
+
+    .sheet-modal__body .tt-table tbody th { padding: 0.7rem 0 0.5rem; }
+
+    .sheet-modal__body .tt-course { font-size: 0.92rem; }
+}

@@ -113,7 +113,7 @@
         }).join('');
 
         return '' +
-            '<article class="tt-sheet" data-tt="' + esc(s.id) + '" role="button" tabindex="0"' +
+            '<article class="tt-sheet" data-sheet="' + esc(s.id) + '" role="button" tabindex="0"' +
                 ' aria-label="عرض جدول ' + esc(s.department) + ' بالحجم الكامل">' +
                 '<header class="tt-sheet-head">' +
                     '<div class="tt-sheet-titles">' +
@@ -391,8 +391,95 @@
         });
     }
 
+    /* ---------- عرض الجدول النصي مكبّراً (نافذة كاملة) ---------- */
+    var sheetReturnFocus = null;
+
+    function openSheet(id) {
+        var modal = document.getElementById('sheetModal');
+        var body = document.getElementById('sheetModalBody');
+        var title = document.getElementById('sheetModalTitle');
+        var meta = document.getElementById('sheetModalMeta');
+        var source = document.querySelector('.tt-sheet[data-sheet="' + id + '"] .tt-table');
+        if (!modal || !body || !source) return;
+
+        var schedule = null;
+        for (var i = 0; i < SCHEDULES.length; i++) {
+            if (SCHEDULES[i].id === id) schedule = SCHEDULES[i];
+        }
+
+        if (title) title.textContent = schedule ? schedule.department : 'الجدول الدراسي';
+        if (meta) meta.textContent = schedule ? (schedule.term + ' ' + schedule.year) : '';
+
+        sheetReturnFocus = document.activeElement;
+
+        var wasOpen = modal.classList.contains('is-open');
+
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('sheet-open');
+
+        /* إدراج المحتوى بعد ظهور النافذة — يمنع قفزة التمرير في المتصفح */
+        function insert() {
+            body.innerHTML = '';
+            body.appendChild(source.cloneNode(true));
+            body.scrollTop = 0;
+
+            window.setTimeout(function () {
+                var closeBtn = document.getElementById('sheetModalClose');
+                if (closeBtn) closeBtn.focus({ preventScroll: true });
+            }, 60);
+        }
+
+        if (wasOpen) insert();
+        else window.requestAnimationFrame(insert);
+    }
+
+    function closeSheet() {
+        var modal = document.getElementById('sheetModal');
+        if (!modal || !modal.classList.contains('is-open')) return;
+
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('sheet-open');
+
+        if (sheetReturnFocus && sheetReturnFocus.focus) sheetReturnFocus.focus();
+        sheetReturnFocus = null;
+    }
+
+    function initSheetModal() {
+        var modal = document.getElementById('sheetModal');
+        if (!modal) return;
+
+        var closeBtn = document.getElementById('sheetModalClose');
+        if (closeBtn) closeBtn.addEventListener('click', closeSheet);
+
+        modal.addEventListener('click', function (e) {
+            if (e.target && e.target.getAttribute && e.target.getAttribute('data-sheet-close') !== null) {
+                closeSheet();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            var trigger = e.target.closest ? e.target.closest('[data-sheet]') : null;
+            if (trigger) openSheet(trigger.getAttribute('data-sheet'));
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeSheet();
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+
+            var el = e.target;
+            if (!el || !el.getAttribute || !el.getAttribute('data-sheet')) return;
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return;
+
+            e.preventDefault();
+            openSheet(el.getAttribute('data-sheet'));
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         renderTimetables();
         initViewer();
+        initSheetModal();
     });
 })();

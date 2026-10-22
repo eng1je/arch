@@ -338,6 +338,23 @@
         </div>
     </div>
 
+    <!-- عارض الجدول النصي (عرض مكبّر) -->
+    <div class="sheet-modal" id="sheetModal" role="dialog" aria-modal="true" aria-labelledby="sheetModalTitle" aria-hidden="true">
+        <div class="sheet-modal__backdrop" data-sheet-close></div>
+        <div class="sheet-modal__panel" role="document">
+            <header class="sheet-modal__head">
+                <div class="sheet-modal__titles">
+                    <h3 id="sheetModalTitle">الجدول الدراسي</h3>
+                    <span id="sheetModalMeta"></span>
+                </div>
+                <button type="button" class="sheet-modal__close" id="sheetModalClose" aria-label="إغلاق الجدول" title="إغلاق">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </header>
+            <div class="sheet-modal__body" id="sheetModalBody"></div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
