@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الجداول الدراسية – أرشيف امتحانات كلية الهندسة – جامعة الجفرة</title>
+    <meta name="description" content="الجداول الدراسية لكلية الهندسة – جامعة الجفرة. اختر القسم واستعرض الجدول كاملاً بحجم كبير مع تمييز اليوم الحالي.">
+    <link rel="icon" type="image/png" href="images/logo-128.png">
+    <link rel="apple-touch-icon" href="images/logo-128.png">
+    <link rel="stylesheet" href="css/style.css?v=20261023e">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="tt-page-body">
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <img src="images/logo.png" alt="شعار كلية الهندسة – جامعة الجفرة" class="logo-img">
+                    <h1><a href="index.html">أرشيف امتحانات كلية الهندسة – جامعة الجفرة</a></h1>
+                </div>
+                <div class="nav-actions">
+                    <a class="btn-admin" href="index.html" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">
+                        <i class="fas fa-house"></i>
+                    </a>
+                    <a class="btn-admin" href="admin.html" aria-label="لوحة الإدارة" title="لوحة الإدارة">
+                        <i class="fas fa-user-shield"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main tt-page">
+        <div class="container">
+            <a class="btn-back" href="index.html">
+                <i class="fas fa-arrow-right"></i> الرئيسية
+            </a>
+
+            <header class="tt-page-head">
+                <span class="tt-page-chip">
+                    <i class="fas fa-calendar-days" aria-hidden="true"></i>
+                    الفصل الحالي
+                </span>
+                <h1>الجداول الدراسية</h1>
+                <p>اختر القسم ثم اضغط زر <b>«عرض الجدول»</b> لعرض الجدول كاملاً بحجم كبير مع تمييز اليوم الحالي.</p>
+            </header>
+
+            <section class="timetables-section tt-page-section" id="timetablesSection">
+                <div class="timetables-grid" id="timetablesGrid"></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-code" aria-hidden="true"></div>
+        <div class="footer-content">
+            <span class="dev-badge" aria-hidden="true">
+                <i class="fas fa-code"></i>
+            </span>
+            <p class="credit credit-en">Designed &amp; developed by <span>Jehad Salem Ahmed</span></p>
+        </div>
+    </footer>
+
+    <!-- Timetable Viewer -->
+    <div class="tv-modal" id="timetableViewer" role="dialog" aria-modal="true" aria-labelledby="tvTitle">
+        <div class="tv-backdrop"></div>
+        <div class="tv-panel">
+            <header class="tv-header">
+                <div class="tv-title">
+                    <i class="fas fa-table-list"></i>
+                    <div>
+                        <h3 id="tvTitle">الجدول الدراسي</h3>
+                        <span id="tvMeta"></span>
+                    </div>
+                </div>
+                <div class="tv-tools">
+                    <button type="button" class="tv-btn" id="tvZoomOut" title="تصغير" aria-label="تصغير">
+                        <i class="fas fa-magnifying-glass-minus"></i>
+                    </button>
+                    <span class="tv-zoom-level" id="tvZoomLevel">100%</span>
+                    <button type="button" class="tv-btn" id="tvZoomIn" title="تكبير" aria-label="تكبير">
+                        <i class="fas fa-magnifying-glass-plus"></i>
+                    </button>
+                    <button type="button" class="tv-btn" id="tvReset" title="الحجم الأصلي" aria-label="الحجم الأصلي">
+                        <i class="fas fa-arrows-rotate"></i>
+                    </button>
+                    <a class="tv-btn tv-btn--download" id="tvDownload" href="#" download title="تحميل الجدول" aria-label="تحميل الجدول">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    <a class="tv-btn" id="tvOpen" href="#" target="_blank" rel="noopener noreferrer" title="فتح في نافذة جديدة" aria-label="فتح في نافذة جديدة">
+                        <i class="fas fa-up-right-from-square"></i>
+                    </a>
+                    <button type="button" class="tv-btn tv-btn--close" id="tvClose" title="إغلاق" aria-label="إغلاق">
+                        <i class="fas fa-xmark"></i>
+                    </button>
+                </div>
+            </header>
+            <div class="tv-stage" id="tvStage">
+                <img id="tvImage" alt="">
+            </div>
+            <footer class="tv-footer">
+                <span><i class="fas fa-hand-pointer"></i> اسحب الصورة للتحرك</span>
+                <span><i class="fas fa-computer-mouse"></i> عجلة الفأرة للتكبير</span>
+                <span><i class="fas fa-magnifying-glass-plus"></i> نقرة مزدوجة للتكبير السريع</span>
+                <span><i class="fas fa-keyboard"></i> Esc للإغلاق</span>
+            </footer>
+        </div>
+    </div>
+
+    <!-- عارض الجدول النصي -->
+    <div class="sheet-modal" id="sheetModal" role="dialog" aria-modal="true" aria-labelledby="sheetModalTitle" aria-hidden="true">
+        <div class="sheet-modal__backdrop" data-sheet-close></div>
+        <div class="sheet-modal__panel" role="document">
+            <header class="sheet-modal__head">
+                <div class="sheet-modal__titles">
+                    <h3 id="sheetModalTitle">الجدول الدراسي</h3>
+                    <span id="sheetModalMeta"></span>
+                </div>
+                <button type="button" class="sheet-modal__close" id="sheetModalClose" aria-label="إغلاق الجدول" title="إغلاق">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </header>
+            <div class="sheet-modal__body" id="sheetModalBody"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="js/config.js?v=20261023e"></script>
+    <script src="js/timetables.js?v=20261023e"></script>
+    <script src="js/effects.js?v=20261023e"></script>
+</body>
+</html>

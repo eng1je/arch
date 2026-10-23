@@ -7,7 +7,7 @@
     <meta name="description" content="أرشيف امتحانات السنوات السابقة لكلية الهندسة - جامعة الجفرة. استعرض، معاينة، وتحميل امتحانات PDF بسهولة">
     <link rel="icon" type="image/png" href="images/logo-128.png">
     <link rel="apple-touch-icon" href="images/logo-128.png">
-    <link rel="stylesheet" href="css/style.css?v=20261023c">
+    <link rel="stylesheet" href="css/style.css?v=20261023e">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
@@ -24,6 +24,9 @@
                     <h1>أرشيف امتحانات كلية الهندسة – جامعة الجفرة</h1>
                 </div>
                 <div class="nav-actions">
+                    <a class="btn-admin btn-timetables" href="timetables.html" aria-label="الجداول الدراسية" title="الجداول الدراسية">
+                        <i class="fas fa-table-list"></i>
+                    </a>
                     <button class="btn-search-toggle" id="searchToggleBtn" aria-label="بحث سريع" title="بحث سريع">
                         <i class="fas fa-search"></i>
                     </button>
@@ -98,7 +101,7 @@
                         <i class="fas fa-building-columns" aria-hidden="true"></i>
                         <span>تصفّح الأقسام</span>
                     </a>
-                    <a class="hero-btn hero-btn--ghost" href="#timetablesSection">
+                    <a class="hero-btn hero-btn--ghost" href="timetables.html">
                         <i class="fas fa-table-list" aria-hidden="true"></i>
                         <span>الجداول الدراسية</span>
                     </a>
@@ -145,17 +148,6 @@
                 <span class="stage-chip stage-chip--pdf"><i class="fas fa-file-pdf"></i> PDF</span>
                 <span class="stage-chip stage-chip--table"><i class="fas fa-table-list"></i> الجداول</span>
             </div>
-        </div>
-    </section>
-
-    <!-- Study Timetables Section -->
-    <section class="timetables-section" id="timetablesSection" style="display: none;">
-        <div class="container">
-            <h2 class="section-title" data-symbol="&#916;">
-                <i class="fas fa-table-list"></i> الجداول الدراسية
-                <span class="section-subtitle">الفصل الحالي</span>
-            </h2>
-            <div class="timetables-grid" id="timetablesGrid"></div>
         </div>
     </section>
 
@@ -281,75 +273,11 @@
         </div>
     </div>
 
-    <!-- Timetable Viewer -->
-    <div class="tv-modal" id="timetableViewer" role="dialog" aria-modal="true" aria-labelledby="tvTitle">
-        <div class="tv-backdrop"></div>
-        <div class="tv-panel">
-            <header class="tv-header">
-                <div class="tv-title">
-                    <i class="fas fa-table-list"></i>
-                    <div>
-                        <h3 id="tvTitle">الجدول الدراسي</h3>
-                        <span id="tvMeta"></span>
-                    </div>
-                </div>
-                <div class="tv-tools">
-                    <button type="button" class="tv-btn" id="tvZoomOut" title="تصغير" aria-label="تصغير">
-                        <i class="fas fa-magnifying-glass-minus"></i>
-                    </button>
-                    <span class="tv-zoom-level" id="tvZoomLevel">100%</span>
-                    <button type="button" class="tv-btn" id="tvZoomIn" title="تكبير" aria-label="تكبير">
-                        <i class="fas fa-magnifying-glass-plus"></i>
-                    </button>
-                    <button type="button" class="tv-btn" id="tvReset" title="الحجم الأصلي" aria-label="الحجم الأصلي">
-                        <i class="fas fa-arrows-rotate"></i>
-                    </button>
-                    <a class="tv-btn tv-btn--download" id="tvDownload" href="#" download title="تحميل الجدول" aria-label="تحميل الجدول">
-                        <i class="fas fa-download"></i>
-                    </a>
-                    <a class="tv-btn" id="tvOpen" href="#" target="_blank" rel="noopener noreferrer" title="فتح في نافذة جديدة" aria-label="فتح في نافذة جديدة">
-                        <i class="fas fa-up-right-from-square"></i>
-                    </a>
-                    <button type="button" class="tv-btn tv-btn--close" id="tvClose" title="إغلاق" aria-label="إغلاق">
-                        <i class="fas fa-xmark"></i>
-                    </button>
-                </div>
-            </header>
-            <div class="tv-stage" id="tvStage">
-                <img id="tvImage" alt="">
-            </div>
-            <footer class="tv-footer">
-                <span><i class="fas fa-hand-pointer"></i> اسحب الصورة للتحرك</span>
-                <span><i class="fas fa-computer-mouse"></i> عجلة الفأرة للتكبير</span>
-                <span><i class="fas fa-magnifying-glass-plus"></i> نقرة مزدوجة للتكبير السريع</span>
-                <span><i class="fas fa-keyboard"></i> Esc للإغلاق</span>
-            </footer>
-        </div>
-    </div>
-
-    <!-- عارض الجدول النصي (عرض مكبّر) -->
-    <div class="sheet-modal" id="sheetModal" role="dialog" aria-modal="true" aria-labelledby="sheetModalTitle" aria-hidden="true">
-        <div class="sheet-modal__backdrop" data-sheet-close></div>
-        <div class="sheet-modal__panel" role="document">
-            <header class="sheet-modal__head">
-                <div class="sheet-modal__titles">
-                    <h3 id="sheetModalTitle">الجدول الدراسي</h3>
-                    <span id="sheetModalMeta"></span>
-                </div>
-                <button type="button" class="sheet-modal__close" id="sheetModalClose" aria-label="إغلاق الجدول" title="إغلاق">
-                    <i class="fas fa-xmark"></i>
-                </button>
-            </header>
-            <div class="sheet-modal__body" id="sheetModalBody"></div>
-        </div>
-    </div>
-
     <!-- Toast -->
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script src="js/config.js?v=20261023c"></script>
-    <script src="js/timetables.js?v=20261023c"></script>
-    <script src="js/app.js?v=20261023c"></script>
-    <script src="js/effects.js?v=20261023c"></script>
+    <script src="js/config.js?v=20261023e"></script>
+    <script src="js/app.js?v=20261023e"></script>
+    <script src="js/effects.js?v=20261023e"></script>
 </body>
 </html>
